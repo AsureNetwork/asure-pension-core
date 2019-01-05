@@ -5,6 +5,6 @@ use asure_pension_core::common::Settings;
 fn main() {
     println!("Hello, world!");
     run();
-    let settings = Settings::new();
-    assert_eq!(settings.eth, 0);
+    let mut settings = Settings::new();
+    settings.eth=10;
 }
