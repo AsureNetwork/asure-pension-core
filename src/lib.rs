@@ -1,9 +1,7 @@
+#![allow(dead_code)]
 pub mod common;
-pub mod user;
 pub mod pension;
-pub mod period;
 pub mod transaction;
-
 
 pub mod core{
     pub fn run(){

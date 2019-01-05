@@ -1,6 +1,3 @@
-extern crate chrono;
-use chrono::{DateTime, Utc};
-use std::collections::linked_list::LinkedList;
 
 pub struct User{
     pub name:String,
@@ -12,7 +9,7 @@ pub struct User{
     pub pension_eth: u128,
     pub total:u128,
     pub dpt: u128,
-    pub activated_dpt: u128,
+    pub activated_dtp: u128,
 }
 
 
@@ -24,7 +21,7 @@ pub struct Wallet{
 
 pub struct Token{
     pub amount:i64,
-    pub created: DateTime<Utc>
+    //pub Created:Date
 }
 
 

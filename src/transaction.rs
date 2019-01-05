@@ -1,11 +1,17 @@
-use crate::user::User;
 
 pub struct Transaction{
-    pub user: User,
-    pub amount: u64
+    data:i64
 }
 
-
+impl Transaction {
+    // A public constructor method
+    #[warn(dead_code)]
+    pub fn new() -> Transaction {
+        Transaction {
+            data:10
+        }
+    }
+}
 
 
 
