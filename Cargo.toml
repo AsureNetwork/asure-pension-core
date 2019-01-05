@@ -3,5 +3,9 @@ name = "asure-pension-core"
 version = "0.1.0"
 authors = ["pmizel <pmizel@echtnice.com>"]
 edition = "2018"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
 
 [dependencies]
