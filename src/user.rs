@@ -1,3 +1,5 @@
+use std::collections::linked_list::LinkedList;
+use chrono:: {DateTime, Utc};
 
 pub struct User{
     pub name:String,
@@ -12,6 +14,29 @@ pub struct User{
     pub activated_dtp: u128,
 }
 
+impl User{
+    // A public constructor method
+    #[warn(dead_code)]
+    pub fn new() -> User {
+        User {
+            name: String::new(),
+            wallet:Wallet::new(),
+            pension_status: 0,
+            pension_payment_months: 0,
+            pension_recived_months: 0,
+            eth: 0,
+            pension_eth: 0,
+            total: 0,
+            dpt: 0,
+            activated_dtp: 0
+        }
+    }
+
+    pub fn get_pension_recieve_months(&self)-> u128 {
+        (&self.pension_payment_months * &self.pension_payment_months) / 480
+    }
+}
+
 
 pub struct Wallet{
     pub eth:i64,
@@ -19,9 +44,19 @@ pub struct Wallet{
     pub tokens: LinkedList<Token>
 }
 
+impl Wallet{
+    pub fn new()-> Wallet{
+    Wallet{
+        eth: 0,
+        pension_eth: 0,
+        tokens: LinkedList::new()
+    }
+    }
+}
+
 pub struct Token{
     pub amount:i64,
-    pub created: DateTime
+    pub created: DateTime<Utc>
 }
 
 

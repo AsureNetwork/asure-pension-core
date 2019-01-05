@@ -2,6 +2,7 @@
 pub mod common;
 pub mod pension;
 pub mod transaction;
+pub mod user;
 
 pub mod core{
     pub fn run(){
