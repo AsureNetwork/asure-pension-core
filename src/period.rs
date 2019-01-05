@@ -1,6 +1,10 @@
+use chrono::{DateTime, Utc};
+use std::collections::linked_list::LinkedList;
+use crate::transaction::Transaction;
 
 pub struct Period{
-    pub period:u64,
+    pub transactions:LinkedList<Transaction>,
+    pub date: DateTime<Utc>
 
 }
 
