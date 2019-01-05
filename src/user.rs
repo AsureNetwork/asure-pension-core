@@ -21,7 +21,7 @@ pub struct Wallet{
 
 pub struct Token{
     pub amount:i64,
-    //pub Created:Date
+    pub created: DateTime
 }
 
 
