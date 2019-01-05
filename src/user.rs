@@ -60,7 +60,3 @@ pub struct Token{
 }
 
 
-#[cfg(test)]
-mod tests {
-
-}
