@@ -59,4 +59,20 @@ pub struct Token{
     pub created: DateTime<Utc>
 }
 
+#[cfg(test)]
+mod tests {
+
+    #[cfg(test)]
+    mod tests {
+        use crate::user::*;
+
+        #[test]
+        fn get_pension_recieve_months_for_ten_years() {
+            let mut user = User::new();
+            user.pension_payment_months = 120;
+            assert_eq!(user.get_pension_recieve_months(),30);
+        }
+    }
+}
+
 

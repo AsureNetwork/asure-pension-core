@@ -29,7 +29,11 @@ impl Pension{
         }
     }
 
-    pub fn create_users(&self){
+    pub fn create_users(mut self, mut count: u32){
+        while count > 0 {
+            self.users.push_front(User::new());
+        }
+        count -= 1;
 
     }
 
@@ -54,4 +58,21 @@ impl Pension{
     }
 
 
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[cfg(test)]
+    mod tests {
+        use crate::pension::*;
+
+        #[test]
+        fn create_users() {
+            let pension = Pension::new();
+            pension.create_users(5);
+            //todo
+            //assert_eq!(pension.users.len(), 5);
+        }
+    }
 }
