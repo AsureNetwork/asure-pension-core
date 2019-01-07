@@ -33,7 +33,7 @@ impl User {
         }
     }
 
-    pub fn get_pension_recieve_months(&self) -> u128 {
+    pub fn get_pension_receive_months(&self) -> u128 {
         (&self.pension_payment_months * &self.pension_payment_months) / 480
     }
 }
@@ -67,10 +67,10 @@ mod tests {
         use crate::user::*;
 
         #[test]
-        fn get_pension_recieve_months_for_ten_years() {
+        fn get_pension_receive_months_for_ten_years() {
             let mut user = User::new();
             user.pension_payment_months = 120;
-            assert_eq!(user.get_pension_recieve_months(), 30);
+            assert_eq!(user.get_pension_receive_months(), 30);
         }
     }
 }
