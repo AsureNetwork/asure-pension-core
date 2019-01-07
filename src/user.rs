@@ -7,7 +7,7 @@ pub struct User {
     pub wallet: Wallet,
     pub pension_status: u128,
     pub pension_payment_months: u128,
-    pub pension_recived_months: u128,
+    pub pension_received_months: u128,
     pub eth: u128,
     pub pension_eth: u128,
     pub total: u128,
@@ -24,7 +24,7 @@ impl User {
             wallet: Wallet::new(),
             pension_status: 0,
             pension_payment_months: 0,
-            pension_recived_months: 0,
+            pension_received_months: 0,
             eth: 0,
             pension_eth: 0,
             total: 0,
@@ -33,7 +33,7 @@ impl User {
         }
     }
 
-    pub fn get_pension_recieve_months(&self) -> u128 {
+    pub fn get_pension_receive_months(&self) -> u128 {
         (&self.pension_payment_months * &self.pension_payment_months) / 480
     }
 }
@@ -67,10 +67,10 @@ mod tests {
         use crate::user::*;
 
         #[test]
-        fn get_pension_recieve_months_for_ten_years() {
+        fn get_pension_receive_months_for_ten_years() {
             let mut user = User::new();
             user.pension_payment_months = 120;
-            assert_eq!(user.get_pension_recieve_months(), 30);
+            assert_eq!(user.get_pension_receive_months(), 30);
         }
     }
 }
