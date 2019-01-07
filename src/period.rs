@@ -1,10 +1,10 @@
-use std::collections::linked_list::LinkedList;
+use std::vec::Vec;
 
 use crate::transaction::*;
 
 pub struct Period {
     pub index: u64,
-    pub txs: LinkedList<Transaction>,
+    pub txs: Vec<Transaction>,
 
 }
 
@@ -12,12 +12,12 @@ impl Period {
     pub fn new() -> Period {
         Period {
             index: 0,
-            txs: LinkedList::new(),
+            txs: Vec::new(),
         }
     }
 
     pub fn create_tx(mut self) {
-        self.txs.push_front(Transaction::new());
+        self.txs.push(Transaction::new());
     }
 }
 
