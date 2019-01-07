@@ -1,6 +1,5 @@
-
-pub struct Transaction{
-    data:i64
+pub struct Transaction {
+    data: i64
 }
 
 impl Transaction {
@@ -8,14 +7,11 @@ impl Transaction {
     #[warn(dead_code)]
     pub fn new() -> Transaction {
         Transaction {
-            data:10
+            data: 10
         }
     }
 }
 
 
-
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}

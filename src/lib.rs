@@ -1,11 +1,13 @@
 #![allow(dead_code)]
+
 pub mod common;
 pub mod pension;
 pub mod transaction;
 pub mod user;
+pub mod period;
 
-pub mod core{
-    pub fn run(){
+pub mod core {
+    pub fn run() {
         println!("Run Hello, world!");
     }
 }
