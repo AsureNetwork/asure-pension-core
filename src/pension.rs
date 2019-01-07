@@ -26,7 +26,7 @@ impl Pension {
         }
     }
 
-    pub fn create_users(mut self, mut count: u32) {
+    pub fn create_users(&mut self, mut count: u32) {
         while count > 0 {
             self.users.push_front(User::new());
             count -= 1;
@@ -37,7 +37,8 @@ impl Pension {
 
     pub fn payout(&self) {}
 
-    pub fn activate_retirement(&self) -> bool {
+    pub fn activate_retirement(&self, mut user: &User) -> bool {
+
         return false;
     }
 

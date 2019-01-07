@@ -20,7 +20,7 @@ impl User {
     #[warn(dead_code)]
     pub fn new() -> User {
         User {
-            name: String::new(),
+            name: String::from("UserName"),
             wallet: Wallet::new(),
             pension_status: 0,
             pension_payment_months: 0,
