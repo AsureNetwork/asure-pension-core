@@ -38,7 +38,6 @@ impl Pension {
     pub fn payout(&self) {}
 
 
-
     pub fn calculate_points(&self) -> u128 {
         return 0;
     }
@@ -48,16 +47,13 @@ impl Pension {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(test)]
-    mod tests {
-        use crate::pension::*;
+    use crate::pension::*;
 
-        #[test]
-        fn create_users() {
-            let pension = Pension::new();
-            pension.create_users(5);
-            //todo
-            //assert_eq!(pension.users.len(), 5);
-        }
+    #[test]
+    fn create_users() {
+        let mut pension = Pension::new();
+        pension.create_users(5);
+
+        assert_eq!(pension.users.len(), 5);
     }
 }
