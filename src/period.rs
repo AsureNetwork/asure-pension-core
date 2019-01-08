@@ -16,7 +16,7 @@ impl Period {
         }
     }
 
-    pub fn create_tx(mut self) {
+    pub fn create_tx(&mut self) {
         self.txs.push(Transaction::new());
     }
 }

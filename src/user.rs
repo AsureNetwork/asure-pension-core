@@ -4,7 +4,7 @@ pub struct User {
     pub name: String,
     pub wallet: Wallet,
     pub retirement: bool,
-    pub pension_status: u128,
+    pub pension_status: PensionStatus,
     pub pension_payment_months: u128,
     pub pension_received_months: u128,
     pub eth: u128,
@@ -12,6 +12,13 @@ pub struct User {
     pub total: u128,
     pub dpt: u128,
     pub activated_dtp: u128,
+}
+
+#[derive(PartialEq)]
+pub enum PensionStatus {
+    Run,
+    Retirement,
+    Done,
 }
 
 impl User {
@@ -22,7 +29,7 @@ impl User {
             name: String::from("UserName"),
             wallet: Wallet::new(),
             retirement: false,
-            pension_status: 0,
+            pension_status: PensionStatus::Run,
             pension_payment_months: 0,
             pension_received_months: 0,
             eth: 0,
@@ -45,7 +52,7 @@ impl User {
 
 
 pub struct Wallet {
-    pub eth: i64,
+    pub eth: u64,
     pub pension_eth: i64,
     pub tokens: Vec<Token>,
 }
