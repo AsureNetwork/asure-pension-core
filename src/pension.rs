@@ -1,35 +1,32 @@
-use std::collections::linked_list::LinkedList;
-
 use crate::period::*;
 use crate::user::*;
 
 pub struct Pension {
-    pub period: LinkedList<Period>,
+    pub period: Vec<Period>,
     pub total_eth: u64,
     pub total_month_eth: u64,
     pub total_dpt: u64,
     pub total_month_dpt: u64,
     pub total_retirement_dpt: u64,
-    pub users: LinkedList<User>,
+    pub users: Vec<User>,
 }
 
 impl Pension {
     pub fn new() -> Pension {
         Pension {
-            period: LinkedList::new(),
+            period: Vec::new(),
             total_eth: 0,
             total_month_eth: 0,
             total_dpt: 0,
             total_month_dpt: 0,
             total_retirement_dpt: 0,
-            users: LinkedList::new(),
+            users: Vec::new(),
         }
     }
 
-    pub fn create_users(&mut self, mut count: u32) {
-        while count > 0 {
-            self.users.push_front(User::new());
-            count -= 1;
+    pub fn create_users(&mut self, count: u32) {
+        for _ in 0..count {
+            self.users.push(User::new());
         }
     }
 

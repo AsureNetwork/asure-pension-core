@@ -1,5 +1,3 @@
-use std::collections::linked_list::LinkedList;
-
 use chrono::{DateTime, Utc};
 
 pub struct User {
@@ -49,7 +47,7 @@ impl User {
 pub struct Wallet {
     pub eth: i64,
     pub pension_eth: i64,
-    pub tokens: LinkedList<Token>,
+    pub tokens: Vec<Token>,
 }
 
 impl Wallet {
@@ -57,7 +55,7 @@ impl Wallet {
         Wallet {
             eth: 0,
             pension_eth: 0,
-            tokens: LinkedList::new(),
+            tokens: Vec::new(),
         }
     }
 }
