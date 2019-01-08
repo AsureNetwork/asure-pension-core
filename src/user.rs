@@ -78,6 +78,15 @@ mod tests {
 
         assert_eq!(user.get_pension_receive_months(), 30);
     }
+
+    #[test]
+    fn should_activate_retirement() {
+        let mut user = User::new();
+
+        assert_eq!(user.retirement, false);
+        user.activate_retirement();
+        assert_eq!(user.retirement, true);
+    }
 }
 
 
