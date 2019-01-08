@@ -1,7 +1,7 @@
 use std::collections::linked_list::LinkedList;
 
-use crate::user::*;
 use crate::period::*;
+use crate::user::*;
 
 pub struct Pension {
     pub period: LinkedList<Period>,
@@ -37,10 +37,7 @@ impl Pension {
 
     pub fn payout(&self) {}
 
-    pub fn activate_retirement(&self, mut user: &User) -> bool {
 
-        return false;
-    }
 
     pub fn calculate_points(&self) -> u128 {
         return 0;

@@ -5,6 +5,7 @@ use chrono::{DateTime, Utc};
 pub struct User {
     pub name: String,
     pub wallet: Wallet,
+    pub retirement: bool,
     pub pension_status: u128,
     pub pension_payment_months: u128,
     pub pension_received_months: u128,
@@ -22,6 +23,7 @@ impl User {
         User {
             name: String::from("UserName"),
             wallet: Wallet::new(),
+            retirement: false,
             pension_status: 0,
             pension_payment_months: 0,
             pension_received_months: 0,
@@ -35,6 +37,11 @@ impl User {
 
     pub fn get_pension_receive_months(&self) -> u128 {
         (&self.pension_payment_months * &self.pension_payment_months) / 480
+    }
+
+    pub fn activate_retirement(&mut self) -> bool {
+        self.retirement = true;
+        true
     }
 }
 

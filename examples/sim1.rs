@@ -17,13 +17,9 @@ fn main() {
         if i % 12 == 0 && i < 480 * 2 {
             pension.create_users(2);
         }
-        if i % 24 == 0 && i < 480 * 2 {
-            let mut counter = 0;
-            for user in &pension.users {
-                if pension.activate_retirement(&user) {
-                    counter = counter + 1;
-                }
-                if counter == 1 {
+        if i % 24 == 0 {
+            for user in &mut pension.users {
+                if user.activate_retirement() {
                     break;
                 }
             }
