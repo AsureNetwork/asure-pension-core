@@ -6,12 +6,13 @@ pub struct User {
     pub retirement: bool,
     pub pension_status: PensionStatus,
     pub pension_payment_months: u128,
+    pub pension_receive_months: u128,
     pub pension_received_months: u128,
     pub eth: u128,
     pub pension_eth: u128,
     pub total: u128,
     pub dpt: u128,
-    pub activated_dtp: u128,
+    pub activated_dpt: u128,
 }
 
 #[derive(PartialEq)]
@@ -31,12 +32,13 @@ impl User {
             retirement: false,
             pension_status: PensionStatus::Run,
             pension_payment_months: 0,
+            pension_receive_months: 0,
             pension_received_months: 0,
             eth: 0,
             pension_eth: 0,
             total: 0,
             dpt: 0,
-            activated_dtp: 0,
+            activated_dpt: 0,
         }
     }
 
@@ -52,8 +54,8 @@ impl User {
 
 
 pub struct Wallet {
-    pub eth: u64,
-    pub pension_eth: i64,
+    pub eth: u128,
+    pub pension_eth: u128,
     pub tokens: Vec<Token>,
 }
 

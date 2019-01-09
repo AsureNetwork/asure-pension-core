@@ -7,11 +7,11 @@ use crate::transaction::*;
 
 pub struct Pension {
     pub period: Vec<Period>,
-    pub total_eth: u64,
-    pub total_month_eth: u64,
-    pub total_dpt: u64,
-    pub total_month_dpt: u64,
-    pub total_retirement_dpt: u64,
+    pub total_eth: u128,
+    pub total_month_eth: u128,
+    pub total_dpt: u128,
+    pub total_month_dpt: u128,
+    pub total_retirement_dpt: u128,
     pub users: Vec<User>,
     pub current_period: Period,
     pub current_period2: Option<Period>,
@@ -19,8 +19,8 @@ pub struct Pension {
 
 struct PensionFold {
     txs: Vec<Transaction>,
-    total_eth: u64,
-    total_month_eth: u64,
+    total_eth: u128,
+    total_month_eth: u128,
 }
 
 impl PensionFold {
@@ -90,7 +90,33 @@ impl Pension {
         self.total_month_eth = result.total_month_eth;
     }
 
-    pub fn payout(&self) {}
+    pub fn payout(&mut self) {
+        let mut users = self.users
+            .iter_mut()
+            .filter(|u| u.pension_status == PensionStatus::Retirement);
+
+        let total_retirement_dpt = users.by_ref().fold(0, |acc, user| acc + user.activated_dpt);
+        let part = total_retirement_dpt / self.total_dpt;
+        let amount = self.total_dpt * part + self.total_month_eth * (1 - part);
+
+        users.by_ref().for_each(|user| {
+            if user.pension_received_months < user.pension_receive_months {
+                user.pension_received_months += 1;
+            } else {
+                if user.pension_received_months <= user.pension_receive_months {
+                    user.activated_dpt = 0;
+                    user.pension_status = PensionStatus::Done
+                }
+                return;
+            }
+
+            let my_dpt = user.activated_dpt;
+            let my_part = my_dpt / total_retirement_dpt;
+//            self.total_eth -= my_part * amount;
+
+            user.wallet.pension_eth += my_part * amount;
+        });
+    }
 
     pub fn calculate_points(&self) -> u128 {
         return 0;

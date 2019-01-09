@@ -1,5 +1,5 @@
 pub struct Transaction {
-    pub amount: u64,
+    pub amount: u128,
 }
 
 impl Transaction {
