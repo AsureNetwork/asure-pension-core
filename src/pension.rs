@@ -71,8 +71,6 @@ impl Pension {
                     return state;
                 }
 
-//                let x = Period::new()
-
                 let mut tx = Transaction::new();
                 // tx.user = user;
                 tx.amount = 20;
@@ -87,45 +85,9 @@ impl Pension {
                 return state;
             });
 
-
-//        let x = RefCell::new(self);
-//        let x1 = self.current_period.borrow_mut();
-
-//        let bl = &mut self.current_period;
-
-//        x1.as_ref().unwrap().txs.append(&mut result.txs);
-//        bl.unwrap().txs.append(&mut result.txs);
-//        mem::replace(&mut self.current_period, Option<Period>).unwrap().txs.append(&mut result.txs);
         self.current_period.txs.append(&mut result.txs);
-
-//        match self.current_period2.as_ref() {
-//            Option::Some(i) => i.txs.append(&mut result.txs),
-//            _ => ()
-//        }
-
-//        self.current_period2.txs.append(&mut result.txs);
         self.total_eth = result.total_eth;
         self.total_month_eth = result.total_month_eth;
-
-//        for user in p_users {
-//            if user.pension_payment_months == 480 {
-//                user.activate_retirement();
-//                continue;
-//            }
-
-//            let mut tx = Transaction::new();
-//            // tx.user = user;
-//            tx.amount = 20;
-
-//            user.wallet.eth -= tx.amount;
-//            user.pension_payment_months += 1;
-
-//            self.total_eth += tx.amount;
-//            self.total_month_eth += tx.amount;
-
-//            let _current_period = &self.current_period;
-//            //current_period.txs.push(tx);
-//        }
     }
 
     pub fn payout(&self) {}
