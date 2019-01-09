@@ -1,5 +1,7 @@
 //use chrono::{DateTime, Utc};
 
+use crate::transaction::*;
+
 pub struct User {
     pub name: String,
     pub wallet: Wallet,
@@ -13,6 +15,7 @@ pub struct User {
     pub total: u128,
     pub dpt: u128,
     pub activated_dpt: f64,
+    pub transactions: Vec<Transaction>,
 }
 
 #[derive(PartialEq)]
@@ -39,6 +42,7 @@ impl User {
             total: 0,
             dpt: 0,
             activated_dpt: 0.0,
+            transactions: Vec::new(),
         }
     }
 
@@ -49,6 +53,15 @@ impl User {
     pub fn activate_retirement(&mut self) -> bool {
         self.retirement = true;
         true
+    }
+
+    pub fn pay_into_pension(&mut self, period: u32, amount: f64) {
+        let tx = Transaction::new(period, amount);
+
+        self.wallet.eth -= tx.amount;
+        self.pension_payment_months += 1;
+
+        self.transactions.push(tx);
     }
 }
 

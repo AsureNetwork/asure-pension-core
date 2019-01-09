@@ -2,25 +2,20 @@
 //use std::cell::RefCell;
 
 use crate::common::*;
-use crate::period::*;
 use crate::user::*;
-use crate::transaction::*;
 
 pub struct Pension {
-    pub period_index: u64,
-    pub period: Vec<Period>,
     pub total_eth: f64,
     pub total_month_eth: f64,
     pub total_dpt: f64,
     pub total_month_dpt: f64,
     pub total_retirement_dpt: f64,
     pub users: Vec<User>,
-    pub current_period: Period,
+    pub current_period: u32,
     pub settings: Settings,
 }
 
 struct PensionFold {
-    txs: Vec<Transaction>,
     total_eth: f64,
     total_month_eth: f64,
 }
@@ -28,7 +23,6 @@ struct PensionFold {
 impl PensionFold {
     pub fn new() -> PensionFold {
         PensionFold {
-            txs: vec![],
             total_eth: 0.0,
             total_month_eth: 0.0,
         }
@@ -38,15 +32,13 @@ impl PensionFold {
 impl Pension {
     pub fn new() -> Pension {
         Pension {
-            period_index: 0,
-            period: Vec::new(),
             total_eth: 0.0,
             total_month_eth: 0.0,
             total_dpt: 0.0,
             total_month_dpt: 0.0,
             total_retirement_dpt: 0.0,
             users: Vec::new(),
-            current_period: Period::new(),
+            current_period: 0,
             settings: Settings::new(),
         }
     }
@@ -58,37 +50,33 @@ impl Pension {
     }
 
     pub fn start(&mut self) {
-        self.period_index += 1;
-        self.current_period = Period::new();
+        self.current_period += 1;
     }
 
     pub fn pay(&mut self) {
         self.total_month_eth = 0.0;
 
-        let mut result = self.users
+        let period = self.current_period;
+
+        let result = self.users
             .iter_mut()
             .filter(|u| u.pension_status == PensionStatus::Run)
             .fold(PensionFold::new(), |mut state, user| {
+
                 if user.pension_payment_months == 480 {
                     user.activate_retirement();
                     return state;
                 }
 
-                let mut tx = Transaction::new();
-                // tx.user = user;
-                tx.amount = 20.0;
+                let amount = 20.0;
+                user.pay_into_pension(period, amount);
 
-                user.wallet.eth -= tx.amount;
-                user.pension_payment_months += 1;
-
-                state.total_eth += tx.amount;
-                state.total_month_eth += tx.amount;
-                state.txs.push(tx);
+                state.total_eth += amount;
+                state.total_month_eth += amount;
 
                 return state;
             });
 
-        self.current_period.txs.append(&mut result.txs);
         self.total_eth = result.total_eth;
         self.total_month_eth = result.total_month_eth;
     }
@@ -135,22 +123,22 @@ impl Pension {
     }
 
     pub fn end(&self) {
-        if self.current_period.txs.is_empty() {
-            return;
-        }
-
-        let plus = self.current_period.txs
-            .iter()
-            .filter(|tx| tx.amount > self.settings.current_contribution_value)
-            .count();
+//        if self.current_period.txs.is_empty() {
+//            return;
+//        }
+//
+//        let plus = self.current_period.txs
+//            .iter()
+//            .filter(|tx| tx.amount > self.settings.current_contribution_value)
+//            .count();
     }
 
     pub fn calculate_avg_points(&self) -> f64 {
-        assert_ne!(self.period_index, 0);
-        if self.period_index >= 40 * 12 {
+        assert_ne!(self.current_period, 0);
+        if self.current_period >= 40 * 12 {
             return 1.0;
         }
-        let years = (self.period_index % 12) as f64;
+        let years = (self.current_period % 12) as f64;
         //[1,5..1.0] in 40 years
         //1.0+(40+1)^2/40/40*0,5
         let result = 1.0 + (((40.0 + 1.0 - years) * (40.0 + 1.0 - years)) / 40.0) / 40.0 * 0.5;
@@ -189,12 +177,12 @@ mod tests {
     #[test]
     fn calculate_avg_points_should_be_one_five_to_one() {
         let mut pension = Pension::new();
-        pension.period_index = 1;
+        pension.current_period = 1;
         let result_one_five = pension.calculate_avg_points();
         println!("{}", result_one_five);
         assert_eq!(result_one_five, 1.5f64);
 
-        pension.period_index = 40 * 12;
+        pension.current_period = 40 * 12;
         let result_one_five = pension.calculate_avg_points();
         assert_eq!(result_one_five, 1.0f64);
     }
