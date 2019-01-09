@@ -15,7 +15,6 @@ pub struct Pension {
     pub total_retirement_dpt: f64,
     pub users: Vec<User>,
     pub current_period: Period,
-    pub current_period2: Option<Period>,
     pub settings: Settings,
 }
 
@@ -46,7 +45,6 @@ impl Pension {
             total_retirement_dpt: 0.0,
             users: Vec::new(),
             current_period: Period::new(),
-            current_period2: Option::None,
             settings: Settings::new(),
         }
     }
@@ -59,7 +57,6 @@ impl Pension {
 
     pub fn start(&mut self) {
         self.current_period = Period::new();
-        self.current_period2 = Option::Some(Period::new());
     }
 
     pub fn pay(&mut self) {
