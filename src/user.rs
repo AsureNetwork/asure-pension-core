@@ -12,7 +12,7 @@ pub struct User {
     pub pension_eth: u128,
     pub total: u128,
     pub dpt: u128,
-    pub activated_dpt: u128,
+    pub activated_dpt: f64,
 }
 
 #[derive(PartialEq)]
@@ -38,7 +38,7 @@ impl User {
             pension_eth: 0,
             total: 0,
             dpt: 0,
-            activated_dpt: 0,
+            activated_dpt: 0.0,
         }
     }
 
@@ -54,18 +54,18 @@ impl User {
 
 
 pub struct Wallet {
-    pub eth: u128,
-    pub pension_eth: u128,
     pub dpt: Token,
+    pub eth: f64,
+    pub pension_eth: f64,
     pub tokens: Vec<Token>,
 }
 
 impl Wallet {
     pub fn new() -> Wallet {
         Wallet {
-            eth: 0,
-            pension_eth: 0,
             dpt: Token { name: String::from("DTP"), amount: 0.0 },
+            eth: 0.0,
+            pension_eth: 0.0,
             tokens: Vec::new(),
         }
     }

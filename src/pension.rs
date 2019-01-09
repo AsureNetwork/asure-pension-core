@@ -3,35 +3,34 @@
 
 use crate::common::*;
 use crate::period::*;
-use crate::transaction::*;
 use crate::user::*;
+use crate::transaction::*;
 
 pub struct Pension {
     pub period_index: u64,
     pub period: Vec<Period>,
-    pub total_eth: u128,
-    pub total_month_eth: u128,
-    pub total_dpt: u128,
-    pub total_month_dpt: u128,
-    pub total_retirement_dpt: u128,
+    pub total_eth: f64,
+    pub total_month_eth: f64,
+    pub total_dpt: f64,
+    pub total_month_dpt: f64,
+    pub total_retirement_dpt: f64,
     pub users: Vec<User>,
     pub current_period: Period,
-    pub current_period2: Option<Period>,
     pub settings: Settings,
 }
 
 struct PensionFold {
     txs: Vec<Transaction>,
-    total_eth: u128,
-    total_month_eth: u128,
+    total_eth: f64,
+    total_month_eth: f64,
 }
 
 impl PensionFold {
     pub fn new() -> PensionFold {
         PensionFold {
             txs: vec![],
-            total_eth: 0,
-            total_month_eth: 0,
+            total_eth: 0.0,
+            total_month_eth: 0.0,
         }
     }
 }
@@ -41,14 +40,13 @@ impl Pension {
         Pension {
             period_index: 0,
             period: Vec::new(),
-            total_eth: 0,
-            total_month_eth: 0,
-            total_dpt: 0,
-            total_month_dpt: 0,
-            total_retirement_dpt: 0,
+            total_eth: 0.0,
+            total_month_eth: 0.0,
+            total_dpt: 0.0,
+            total_month_dpt: 0.0,
+            total_retirement_dpt: 0.0,
             users: Vec::new(),
             current_period: Period::new(),
-            current_period2: Option::None,
             settings: Settings::new(),
         }
     }
@@ -62,11 +60,10 @@ impl Pension {
     pub fn start(&mut self) {
         self.period_index += 1;
         self.current_period = Period::new();
-        self.current_period2 = Option::Some(Period::new());
     }
 
     pub fn pay(&mut self) {
-        self.total_month_eth = 0;
+        self.total_month_eth = 0.0;
 
         let mut result = self.users
             .iter_mut()
@@ -79,7 +76,7 @@ impl Pension {
 
                 let mut tx = Transaction::new();
                 // tx.user = user;
-                tx.amount = 20;
+                tx.amount = 20.0;
 
                 user.wallet.eth -= tx.amount;
                 user.pension_payment_months += 1;
@@ -101,16 +98,16 @@ impl Pension {
             .iter_mut()
             .filter(|u| u.pension_status == PensionStatus::Retirement);
 
-        let total_retirement_dpt = users.by_ref().fold(0, |acc, user| acc + user.activated_dpt);
+        let total_retirement_dpt = users.by_ref().fold(0.0, |acc, user| acc + user.activated_dpt);
         let part = total_retirement_dpt / self.total_dpt;
-        let amount = self.total_dpt * part + self.total_month_eth * (1 - part);
+        let amount = self.total_dpt * part + self.total_month_eth * (1.0 - part);
 
-        self.total_eth -= users.by_ref().fold(0, |total_eth, user| {
+        self.total_eth -= users.by_ref().fold(0.0, |total_eth, user| {
             if user.pension_received_months < user.pension_receive_months {
                 user.pension_received_months += 1;
             } else {
                 if user.pension_received_months <= user.pension_receive_months {
-                    user.activated_dpt = 0;
+                    user.activated_dpt = 0.0;
                     user.pension_status = PensionStatus::Done
                 }
                 return total_eth;
@@ -137,6 +134,17 @@ impl Pension {
         result
     }
 
+    pub fn end(&self) {
+        if self.current_period.txs.is_empty() {
+            return;
+        }
+
+        let plus = self.current_period.txs
+            .iter()
+            .filter(|tx| tx.amount > self.settings.current_contribution_value)
+            .count();
+    }
+
     pub fn calculate_avg_points(&self) -> f64 {
         assert_ne!(self.period_index, 0);
         if self.period_index >= 40 * 12 {
@@ -148,9 +156,6 @@ impl Pension {
         let result = 1.0 + (((40.0 + 1.0 - years) * (40.0 + 1.0 - years)) / 40.0) / 40.0 * 0.5;
         result
     }
-
-
-    pub fn end(&self) {}
 }
 
 #[cfg(test)]

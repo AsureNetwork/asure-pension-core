@@ -1,5 +1,5 @@
 pub struct Transaction {
-    pub amount: u128,
+    pub amount: f64,
 }
 
 impl Transaction {
@@ -7,7 +7,7 @@ impl Transaction {
     #[warn(dead_code)]
     pub fn new() -> Transaction {
         Transaction {
-            amount: 0
+            amount: 0.0
         }
     }
 }

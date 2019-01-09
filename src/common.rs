@@ -1,5 +1,4 @@
-
-pub struct Settings{
+pub struct Settings {
     pub period:u64,
     pub current_avg_points:f64,
     pub current_points_degree: u128,
