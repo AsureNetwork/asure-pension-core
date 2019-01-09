@@ -1,6 +1,7 @@
 //use std::mem;
 //use std::cell::RefCell;
 
+use crate::common::*;
 use crate::period::*;
 use crate::user::*;
 use crate::transaction::*;
@@ -15,6 +16,7 @@ pub struct Pension {
     pub users: Vec<User>,
     pub current_period: Period,
     pub current_period2: Option<Period>,
+    pub settings: Settings,
 }
 
 struct PensionFold {
@@ -45,6 +47,7 @@ impl Pension {
             users: Vec::new(),
             current_period: Period::new(),
             current_period2: Option::None,
+            settings: Settings::new(),
         }
     }
 
@@ -118,8 +121,33 @@ impl Pension {
         });
     }
 
-    pub fn calculate_points(&self) -> u128 {
-        return 0;
+    pub fn calculate_points(&self, amount: f64, min: f64, max: f64) -> f64 {
+        let price = self.settings.current_contribution_value;
+        let result = match amount {
+            _ if amount > price =>
+                (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points,
+            _ if amount < price =>
+                ((amount - min) / (price - min)) * self.settings.current_avg_points,
+            _ => 1f64,
+        };
+
+        result
+
+//
+//
+//        if (amount >= price)
+//            {
+//                return (1 + (amount - price) / (max - price)) * Settings.currentAvgPoints;
+//            }
+//            else
+//            {
+//                if (min < 1)
+//                min = 1;
+//
+//                return ((amount - min)+1) / ((price - min)+1) * Settings.currentAvgPoints;
+//            }
+//
+//        return 0;
     }
 
     pub fn end(&self) {}
@@ -137,12 +165,19 @@ mod tests {
         assert_eq!(pension.users.len(), 5);
     }
 
-    #[test]
-    fn start_should_create_a_new_period() {
-        let mut pension = Pension::new();
-        assert!(pension.current_period.is_none());
+//    #[test]
+//    fn start_should_create_a_new_period() {
+//        let mut pension = Pension::new();
+//        //assert!(pension.current_period.is_none());
+//        pension.start();
+//        assert!(pension.current_period);
+//    }
 
-        pension.start();
-        assert!(pension.current_period.is_some());
+    #[test]
+    fn calculate_points_should_be_one() {
+        let mut pension = Pension::new();
+        pension.settings.current_contribution_value = 10.0;
+        let result_one = pension.calculate_points(10.0, 1.0, 100.0);
+        assert_eq!(result_one, 1.0);
     }
 }

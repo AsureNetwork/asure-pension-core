@@ -3,7 +3,7 @@ pub struct Settings{
     pub period:u64,
     pub current_avg_points:f64,
     pub current_points_degree: u128,
-    pub current_contribution_value:u128,
+    pub current_contribution_value: f64,
     pub eth:u128,
     pub tokens:u128
 }
@@ -17,7 +17,7 @@ impl Settings {
             period: 1,
             current_avg_points : 1.5,
             current_points_degree:10,
-            current_contribution_value: 10,
+            current_contribution_value: 10.0,
             eth:0,
             tokens:0
         }
