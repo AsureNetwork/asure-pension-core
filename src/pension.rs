@@ -99,7 +99,7 @@ impl Pension {
         let part = total_retirement_dpt / self.total_dpt;
         let amount = self.total_dpt * part + self.total_month_eth * (1 - part);
 
-        users.by_ref().for_each(|user| {
+        self.total_eth -= users.by_ref().fold(0, |total_eth, user| {
             if user.pension_received_months < user.pension_receive_months {
                 user.pension_received_months += 1;
             } else {
@@ -107,14 +107,14 @@ impl Pension {
                     user.activated_dpt = 0;
                     user.pension_status = PensionStatus::Done
                 }
-                return;
+                return total_eth;
             }
 
             let my_dpt = user.activated_dpt;
             let my_part = my_dpt / total_retirement_dpt;
-//            self.total_eth -= my_part * amount;
 
             user.wallet.pension_eth += my_part * amount;
+            return total_eth + my_part * amount;
         });
     }
 
