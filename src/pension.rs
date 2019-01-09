@@ -3,10 +3,11 @@
 
 use crate::common::*;
 use crate::period::*;
-use crate::user::*;
 use crate::transaction::*;
+use crate::user::*;
 
 pub struct Pension {
+    pub period_index: u64,
     pub period: Vec<Period>,
     pub total_eth: u128,
     pub total_month_eth: u128,
@@ -38,6 +39,7 @@ impl PensionFold {
 impl Pension {
     pub fn new() -> Pension {
         Pension {
+            period_index: 0,
             period: Vec::new(),
             total_eth: 0,
             total_month_eth: 0,
@@ -58,6 +60,7 @@ impl Pension {
     }
 
     pub fn start(&mut self) {
+        self.period_index += 1;
         self.current_period = Period::new();
         self.current_period2 = Option::Some(Period::new());
     }
@@ -134,6 +137,19 @@ impl Pension {
         result
     }
 
+    pub fn calculate_avg_points(&self) -> f64 {
+        assert_ne!(self.period_index, 0);
+        if self.period_index >= 40 * 12 {
+            return 1.0;
+        }
+        let years = (self.period_index % 12) as f64;
+        //[1,5..1.0] in 40 years
+        //1.0+(40+1)^2/40/40*0,5
+        let result = 1.0 + (((40.0 + 1.0 - years) * (40.0 + 1.0 - years)) / 40.0) / 40.0 * 0.5;
+        result
+    }
+
+
     pub fn end(&self) {}
 }
 
@@ -164,4 +180,18 @@ mod tests {
         let result_one = pension.calculate_points(10.0, 1.0, 100.0);
         assert_eq!(result_one, 1.0);
     }
+
+    #[test]
+    fn calculate_avg_points_should_be_one_five_to_one() {
+        let mut pension = Pension::new();
+        pension.period_index = 1;
+        let result_one_five = pension.calculate_avg_points();
+        println!("{}", result_one_five);
+        assert_eq!(result_one_five, 1.5f64);
+
+        pension.period_index = 40 * 12;
+        let result_one_five = pension.calculate_avg_points();
+        assert_eq!(result_one_five, 1.0f64);
+    }
+
 }

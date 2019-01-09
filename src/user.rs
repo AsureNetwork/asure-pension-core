@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+//use chrono::{DateTime, Utc};
 
 pub struct User {
     pub name: String,
@@ -56,6 +56,7 @@ impl User {
 pub struct Wallet {
     pub eth: u128,
     pub pension_eth: u128,
+    pub dpt: Token,
     pub tokens: Vec<Token>,
 }
 
@@ -64,14 +65,15 @@ impl Wallet {
         Wallet {
             eth: 0,
             pension_eth: 0,
+            dpt: Token { name: String::from("DTP"), amount: 0.0 },
             tokens: Vec::new(),
         }
     }
 }
 
 pub struct Token {
-    pub amount: i64,
-    pub created: DateTime<Utc>,
+    pub name: String,
+    pub amount: f64
 }
 
 #[cfg(test)]

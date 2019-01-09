@@ -3,7 +3,7 @@ use std::vec::Vec;
 use crate::transaction::*;
 
 pub struct Period {
-    pub index: u64,
+    //pub index: u64,
     pub txs: Vec<Transaction>,
 
 }
@@ -11,7 +11,7 @@ pub struct Period {
 impl Period {
     pub fn new() -> Period {
         Period {
-            index: 0,
+            //index: 0,
             txs: Vec::new(),
         }
     }
