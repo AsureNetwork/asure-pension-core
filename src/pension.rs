@@ -5,7 +5,6 @@
 use crate::common::*;
 use crate::user::*;
 
-
 pub struct Pension {
     pub total_eth: f64,
     pub total_month_eth: f64,
@@ -64,7 +63,6 @@ impl Pension {
             .iter_mut()
             .filter(|u| u.pension_status == PensionStatus::Run)
             .fold(PensionFold::new(), |mut state, user| {
-
                 if user.pension_payment_months == 480 {
                     user.activate_retirement();
                     return state;
@@ -113,15 +111,13 @@ impl Pension {
 
     pub fn calculate_points(&self, amount: f64, min: f64, max: f64) -> f64 {
         let price = self.settings.current_contribution_value;
-        let result = match amount {
-            _ if amount > price =>
-                (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points,
-            _ if amount < price =>
-                ((amount - min) / (price - min)) * self.settings.current_avg_points,
-            _ => 1f64,
-        };
-
-        result
+        if amount > price {
+            return (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points;
+        }
+        if amount < price {
+            return ((amount - min) / (price - min)) * self.settings.current_avg_points;
+        }
+        1f64
     }
 
     pub fn end(&self) {
@@ -182,7 +178,6 @@ impl Pension {
 //        Logging("Settings.ETH:" + Settings.ETH);
 //        Logging("Settings.Tokens:" + Settings.Tokens);
 //        Logging("");
-
     }
 
     pub fn calculate_avg_points(&self) -> f64 {
@@ -238,5 +233,4 @@ mod tests {
         let result_one_five = pension.calculate_avg_points();
         assert_eq!(result_one_five, 1.0f64);
     }
-
 }
