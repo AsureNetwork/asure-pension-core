@@ -2,6 +2,7 @@
 
 use crate::transaction::*;
 
+
 pub struct User {
     pub name: String,
     pub wallet: Wallet,
@@ -73,6 +74,7 @@ pub struct Wallet {
     pub tokens: Vec<Token>,
 }
 
+
 impl Wallet {
     pub fn new() -> Wallet {
         Wallet {
@@ -83,6 +85,7 @@ impl Wallet {
         }
     }
 }
+
 
 pub struct Token {
     pub name: String,

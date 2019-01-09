@@ -1,8 +1,10 @@
 //use std::mem;
 //use std::cell::RefCell;
+//use std::iter::FromIterator;
 
 use crate::common::*;
 use crate::user::*;
+
 
 pub struct Pension {
     pub total_eth: f64,
@@ -123,14 +125,64 @@ impl Pension {
     }
 
     pub fn end(&self) {
-//        if self.current_period.txs.is_empty() {
-//            return;
-//        }
+
+        //let period = self.current_period;
+
+        let _all_txs = self.users
+            .iter()
+            .flat_map(|user| &user.transactions)
+            .filter(|tx| tx.period == self.current_period);
+
+//        for tx in all_txs {
 //
-//        let plus = self.current_period.txs
-//            .iter()
-//            .filter(|tx| tx.amount > self.settings.current_contribution_value)
-//            .count();
+//        }
+
+//        let mut txs = Vec::from_iter(
+//            self.users.iter()
+//            .filter_map(|u| u.transactions.iter().)
+//            .cloned());
+//
+//
+//        let plus = CurrentPeriod.Txs.Count(t => t.Amount > Settings.currentPrice);
+//        let minus = CurrentPeriod.Txs.Count(t => t.Amount < Settings.currentPrice);
+//
+//        var sum = CurrentPeriod.Txs.Sum(t => t.Amount);
+//        var average = CurrentPeriod.Txs.Average(t => t.Amount);
+//        var max = CurrentPeriod.Txs.Max(t => t.Amount);
+//        var min = CurrentPeriod.Txs.Min(t => t.Amount);
+//
+//
+//        Logging("plus:" + plus);
+//        Logging("minus:" + minus);
+//
+//        Logging("sum:" + sum);
+//        Logging("average:" + average);
+//        Logging("max:" + max);
+//        Logging("min:" + min);
+//        this.TotalMonthDpt = 0;
+//        foreach (var user in Users)
+//        {
+//            var tx = CurrentPeriod.Txs.FirstOrDefault((t) => t.User == user);
+//            if (tx != null)
+//                {
+//                    var amount = CalculatePoints(tx.Amount, min, max);
+//                    Settings.Tokens += amount;
+//                    var token = new Token()
+//                    {
+//                        Created = CurrentPeriod.Date,
+//                        Amount = amount
+//                    };
+//                    this.TotalMonthDpt += amount;
+//                    user.Wallet.Tokens.Add(token);
+//                    Logging("User:" + user.Name + ":" + token.Amount + " PT");
+//                }
+//        }
+//        Settings.currentPrice = plus > minus ? Settings.currentPrice * (1.0 + Settings.currentPointsDegree / 100) : Settings.currentPrice *(1 - Settings.currentPointsDegree / 100);
+//        Logging("Settings.currentPrice:" + Settings.currentPrice);
+//        Logging("Settings.ETH:" + Settings.ETH);
+//        Logging("Settings.Tokens:" + Settings.Tokens);
+//        Logging("");
+
     }
 
     pub fn calculate_avg_points(&self) -> f64 {
