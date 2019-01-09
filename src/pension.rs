@@ -132,22 +132,6 @@ impl Pension {
         };
 
         result
-
-//
-//
-//        if (amount >= price)
-//            {
-//                return (1 + (amount - price) / (max - price)) * Settings.currentAvgPoints;
-//            }
-//            else
-//            {
-//                if (min < 1)
-//                min = 1;
-//
-//                return ((amount - min)+1) / ((price - min)+1) * Settings.currentAvgPoints;
-//            }
-//
-//        return 0;
     }
 
     pub fn end(&self) {}
