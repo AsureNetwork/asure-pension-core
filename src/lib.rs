@@ -116,14 +116,23 @@ impl Pension {
     }
 
     pub fn calculate_points(&self, amount: f64, min: f64, max: f64) -> f64 {
-        let price = self.settings.current_contribution_value;
-        if amount > price {
-            return (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points;
-        }
-        if amount < price {
-            return ((amount - min) / (price - min)) * self.settings.current_avg_points;
-        }
-        1f64
+        let result = calculations::calculate_points(
+            self.settings.current_contribution_value,
+            self.settings.current_avg_points,
+            amount,
+            min,
+            max,
+        );
+        result
+//
+//        let price = self.settings.current_contribution_value;
+//        if amount > price {
+//            return (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points;
+//        }
+//        if amount < price {
+//            return ((amount - min) / (price - min)) * self.settings.current_avg_points;
+//        }
+//        1f64
     }
 
     pub fn end(&self) {
