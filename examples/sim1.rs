@@ -1,8 +1,6 @@
-use asure_pension_core::common::Settings;
 //cargo run --example sim1
 use asure_pension_core::*;
-use std::time;
-use std::thread;
+use asure_pension_core::common::Settings;
 
 fn main() {
     println!("Pension Sim1");
@@ -19,25 +17,35 @@ fn main() {
     let total_months = payment_months * generations;
 
     for i in 0..total_months {
-        if i % 12 == 0 && i < 480 * 2 {
-            pension.create_users(2);
-        }
+        // until the nth (2) generation
+        if i < 2 * payment_months {
+            // add n (2) new users every year
+            if i % 12 == 0 {
+                pension.create_users(2);
+            }
 
-        if i % 24 == 0 && i < 480 * 2 {
-            let mut counter = 0;
-            for user in &mut pension.users {
-                if user.activate_retirement() {
-                    counter = counter + 1;
-                }
+            // retire user every two years
+            if i % 24 == 0 {
+                let mut counter = 0;
+                for user in &mut pension.users {
+                    if user.activate_retirement() {
+                        counter = counter + 1;
+                    }
 
-                if counter == 1 {
-                    break;
+                    if counter == 1 {
+                        break;
+                    }
                 }
             }
         }
 
         pension.start();
-        pension.pay();
+        let mut sum: f64 = 0.0;
+        for user in &mut pension.users {
+            user.pay(pension.current_period, 20.0);
+            sum += 20.0;
+        }
+        pension.add_amount(sum);
         pension.payout();
         pension.end();
 
@@ -49,11 +57,8 @@ fn main() {
                 //    string.Format("{0,20}", user.Total)+ "  :  "+
 
                 //    (user.PensionPaymentMonths+ " = "+user.PensionRecivedMonths+" / "+user.PensionReciveMonths));
-
-                println!("UserId: {} - Eth: {} - Pension {} - DPT {}", user.id, user.eth, user.pension_eth, user.wallet.dpt.amount);
-                let ten_millis = time::Duration::from_millis(1000);
-
-                thread::sleep(ten_millis);//            Console.WriteLine(
+                println!("User: {} - {} {} DPT: {}", user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount);
+//            Console.WriteLine(
 //                user.Name + "," +
 //                    user.Total + "," +
 //                    (user.PensionPaymentMonths + "," + user.PensionRecivedMonths + "," + user.PensionReciveMonths));

@@ -62,34 +62,40 @@ impl Pension {
 
     pub fn start(&mut self) {
         self.current_period += 1;
-    }
-
-    pub fn pay(&mut self) {
         self.total_month_eth = 0.0;
-
-        let period = self.current_period;
-
-        let result = self.users
-            .iter_mut()
-            .filter(|u| u.pension_status == PensionStatus::Run)
-            .fold(PensionFold::new(), |mut state, user| {
-                if user.pension_payment_months == 480 {
-                    user.activate_retirement();
-                    return state;
-                }
-
-                let amount = 20.0;
-                user.pay_into_pension(period, amount);
-
-                state.total_eth += amount;
-                state.total_month_eth += amount;
-
-                return state;
-            });
-
-        self.total_eth = result.total_eth;
-        self.total_month_eth = result.total_month_eth;
     }
+
+    pub fn add_amount(&mut self, amount: f64) {
+        self.total_eth += amount;
+        self.total_month_eth += amount;
+    }
+
+//    pub fn pay(&mut self) {
+//        self.total_month_eth = 0.0;
+//
+//        let period = self.current_period;
+//
+//        let result = self.users
+//            .iter_mut()
+//            .filter(|u| u.pension_status == PensionStatus::Run)
+//            .fold(PensionFold::new(), |mut state, user| {
+//                if user.pension_payment_months == 480 {
+//                    user.activate_retirement();
+//                    return state;
+//                }
+//
+//                let amount = 20.0;
+//                user.pay_into_pension(period, amount);
+//
+//                state.total_eth += amount;
+//                state.total_month_eth += amount;
+//
+//                return state;
+//            });
+//
+//        self.total_eth = result.total_eth;
+//        self.total_month_eth = result.total_month_eth;
+//    }
 
     pub fn payout(&mut self) {
         let mut users = self.users
