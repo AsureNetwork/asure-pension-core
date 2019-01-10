@@ -1,5 +1,10 @@
 #![allow(dead_code)]
 
+use std::cmp::Ordering::Equal;
+
+use crate::common::*;
+use crate::user::*;
+
 pub mod common;
 //pub mod pension;
 pub mod transaction;
@@ -9,10 +14,6 @@ pub mod token;
 //use std::mem;
 //use std::cell::RefCell;
 //use std::iter::FromIterator;
-
-use crate::common::*;
-use crate::user::*;
-use std::cmp::Ordering::Equal;
 
 pub struct Pension {
     pub total_eth: f64,
@@ -146,6 +147,10 @@ impl Pension {
             .flat_map(|user| &user.transactions)
             .filter(|tx| tx.period == period)
             .map(|tx| tx.amount);
+
+        if period_amounts.clone().count() == 0 {
+            return;
+        }
 
         let plus = period_amounts.clone().filter(|amount| *amount > self.settings.current_contribution_value).count();
         let minus = period_amounts.clone().filter(|amount| *amount < self.settings.current_contribution_value).count();

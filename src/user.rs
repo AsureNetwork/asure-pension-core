@@ -13,10 +13,6 @@ pub struct User {
     pub pension_payment_months: u128,
     pub pension_receive_months: u128,
     pub pension_received_months: u128,
-    pub eth: u128,
-    pub pension_eth: u128,
-    pub total: u128,
-    pub dpt: u128,
     pub activated_dpt: f64,
     pub transactions: Vec<Transaction>,
 }
@@ -43,10 +39,6 @@ impl User {
             pension_payment_months: 0,
             pension_receive_months: 0,
             pension_received_months: 0,
-            eth: 0,
-            pension_eth: 0,
-            total: 0,
-            dpt: 0,
             activated_dpt: 0.0,
             transactions: Vec::new(),
         }
