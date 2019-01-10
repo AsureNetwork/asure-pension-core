@@ -12,6 +12,7 @@ pub mod token;
 
 use crate::common::*;
 use crate::user::*;
+use std::cmp::Ordering::Equal;
 
 pub struct Pension {
     pub total_eth: f64,
@@ -137,64 +138,54 @@ impl Pension {
 //        1f64
     }
 
-    pub fn end(&self) {
+    pub fn end(&mut self) {
+        let period = self.current_period;
 
-        //let period = self.current_period;
-
-        let _all_txs = self.users
+        let period_amounts = self.users
             .iter()
             .flat_map(|user| &user.transactions)
-            .filter(|tx| tx.period == self.current_period);
+            .filter(|tx| tx.period == period)
+            .map(|tx| tx.amount);
 
-//        for tx in all_txs {
-//
-//        }
+        let plus = period_amounts.clone().filter(|amount| *amount > self.settings.current_contribution_value).count();
+        let minus = period_amounts.clone().filter(|amount| *amount < self.settings.current_contribution_value).count();
 
-//        let mut txs = Vec::from_iter(
-//            self.users.iter()
-//            .filter_map(|u| u.transactions.iter().)
-//            .cloned());
-//
-//
-//        let plus = CurrentPeriod.Txs.Count(t => t.Amount > Settings.currentPrice);
-//        let minus = CurrentPeriod.Txs.Count(t => t.Amount < Settings.currentPrice);
-//
-//        var sum = CurrentPeriod.Txs.Sum(t => t.Amount);
-//        var average = CurrentPeriod.Txs.Average(t => t.Amount);
-//        var max = CurrentPeriod.Txs.Max(t => t.Amount);
-//        var min = CurrentPeriod.Txs.Min(t => t.Amount);
-//
-//
-//        Logging("plus:" + plus);
-//        Logging("minus:" + minus);
-//
-//        Logging("sum:" + sum);
-//        Logging("average:" + average);
-//        Logging("max:" + max);
-//        Logging("min:" + min);
-//        this.TotalMonthDpt = 0;
-//        foreach (var user in Users)
-//        {
-//            var tx = CurrentPeriod.Txs.FirstOrDefault((t) => t.User == user);
-//            if (tx != null)
-//                {
-//                    var amount = CalculatePoints(tx.Amount, min, max);
-//                    Settings.Tokens += amount;
-//                    var token = new Token()
-//                    {
-//                        Created = CurrentPeriod.Date,
-//                        Amount = amount
-//                    };
-//                    this.TotalMonthDpt += amount;
-//                    user.Wallet.Tokens.Add(token);
-//                    Logging("User:" + user.Name + ":" + token.Amount + " PT");
-//                }
-//        }
-//        Settings.currentPrice = plus > minus ? Settings.currentPrice * (1.0 + Settings.currentPointsDegree / 100) : Settings.currentPrice *(1 - Settings.currentPointsDegree / 100);
-//        Logging("Settings.currentPrice:" + Settings.currentPrice);
-//        Logging("Settings.ETH:" + Settings.ETH);
-//        Logging("Settings.Tokens:" + Settings.Tokens);
-//        Logging("");
+        self.settings.current_contribution_value = if plus > minus {
+            self.settings.current_contribution_value * (1.0 + self.settings.current_points_degree / 100.0)
+        } else {
+            self.settings.current_contribution_value * (1.0 - self.settings.current_points_degree / 100.0)
+        };
+
+//        let sum: f64 = period_amounts.clone().sum();
+//        let avg: f64 = sum / period_amounts.clone().count() as f64;
+
+        let mut sorted_period_amounts: Vec<f64> = period_amounts.clone().collect();
+        sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
+
+        let min = *sorted_period_amounts.first().unwrap();
+        let max = *sorted_period_amounts.last().unwrap();
+
+        self.total_month_dpt = 0.0;
+
+        let x = |amount, min, max| {
+            self.calculate_points(amount, min, max)
+        };
+
+        for user in &mut self.users {
+            if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
+//                let amount = (*self).calculate_points(tx.amount, min, max);
+                let amount = calculations::calculate_points(
+                    self.settings.current_contribution_value,
+                    self.settings.current_avg_points,
+                    tx.amount,
+                    min,
+                    max,
+                );
+                self.settings.tokens += amount;
+                user.wallet.dpt.amount += amount;
+                self.total_month_dpt += amount;
+            }
+        }
     }
 
     pub fn calculate_avg_points(&self) -> f64 {

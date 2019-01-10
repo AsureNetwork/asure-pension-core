@@ -4,7 +4,7 @@ pub struct Token {
 }
 
 impl Token{
-    pub fn new() -> Token{
+    pub fn new() -> Token {
         Token{
             name: String::from("ETH"),
             amount: 0.0
