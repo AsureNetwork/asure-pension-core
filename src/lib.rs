@@ -4,6 +4,8 @@ pub mod common;
 //pub mod pension;
 pub mod transaction;
 pub mod user;
+pub mod wallet;
+pub mod token;
 //use std::mem;
 //use std::cell::RefCell;
 //use std::iter::FromIterator;
