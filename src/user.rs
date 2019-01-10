@@ -1,7 +1,11 @@
+use std::sync::atomic::{self, AtomicUsize};
 use crate::transaction::*;
 use crate::wallet::*;
 
+static USER_COUNTER: AtomicUsize = atomic::ATOMIC_USIZE_INIT;
+
 pub struct User {
+    pub id: usize,
     pub name: String,
     pub wallet: Wallet,
     pub retirement: bool,
@@ -24,11 +28,14 @@ pub enum PensionStatus {
     Done,
 }
 
+static mut ID_GENERATOR: u64 = 0;
+
 impl User {
     // A public constructor method
     #[warn(dead_code)]
-    pub fn new() -> User {
+    pub fn new() -> Self {
         User {
+            id: USER_COUNTER.fetch_add(1, atomic::Ordering::SeqCst),
             name: String::from("UserName"),
             wallet: Wallet::new(),
             retirement: false,

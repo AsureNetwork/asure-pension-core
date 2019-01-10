@@ -167,10 +167,6 @@ impl Pension {
 
         self.total_month_dpt = 0.0;
 
-        let x = |amount, min, max| {
-            self.calculate_points(amount, min, max)
-        };
-
         for user in &mut self.users {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
 //                let amount = (*self).calculate_points(tx.amount, min, max);
