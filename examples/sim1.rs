@@ -1,6 +1,8 @@
 use asure_pension_core::common::Settings;
 //cargo run --example sim1
 use asure_pension_core::*;
+use std::time;
+use std::thread;
 
 fn main() {
     println!("Pension Sim1");
@@ -47,8 +49,11 @@ fn main() {
                 //    string.Format("{0,20}", user.Total)+ "  :  "+
 
                 //    (user.PensionPaymentMonths+ " = "+user.PensionRecivedMonths+" / "+user.PensionReciveMonths));
-                println!("User: {} - {} {} DPT: {}", user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount);
-//            Console.WriteLine(
+
+                println!("UserId: {} - Eth: {} - Pension {} - DPT {}", user.id, user.eth, user.pension_eth, user.wallet.dpt.amount);
+                let ten_millis = time::Duration::from_millis(1000);
+
+                thread::sleep(ten_millis);//            Console.WriteLine(
 //                user.Name + "," +
 //                    user.Total + "," +
 //                    (user.PensionPaymentMonths + "," + user.PensionRecivedMonths + "," + user.PensionReciveMonths));

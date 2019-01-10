@@ -128,15 +128,6 @@ impl Pension {
             max,
         );
         result
-//
-//        let price = self.settings.current_contribution_value;
-//        if amount > price {
-//            return (1f64 + (amount - price) / (max - price)) * self.settings.current_avg_points;
-//        }
-//        if amount < price {
-//            return ((amount - min) / (price - min)) * self.settings.current_avg_points;
-//        }
-//        1f64
     }
 
     pub fn end(&mut self) {
