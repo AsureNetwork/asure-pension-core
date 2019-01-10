@@ -1,7 +1,5 @@
-//use chrono::{DateTime, Utc};
-
 use crate::transaction::*;
-
+use crate::wallet::*;
 
 pub struct User {
     pub name: String,
@@ -61,36 +59,10 @@ impl User {
 
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
-
         self.transactions.push(tx);
     }
 }
 
-
-pub struct Wallet {
-    pub dpt: Token,
-    pub eth: f64,
-    pub pension_eth: f64,
-    pub tokens: Vec<Token>,
-}
-
-
-impl Wallet {
-    pub fn new() -> Wallet {
-        Wallet {
-            dpt: Token { name: String::from("DTP"), amount: 0.0 },
-            eth: 0.0,
-            pension_eth: 0.0,
-            tokens: Vec::new(),
-        }
-    }
-}
-
-
-pub struct Token {
-    pub name: String,
-    pub amount: f64
-}
 
 #[cfg(test)]
 mod tests {
