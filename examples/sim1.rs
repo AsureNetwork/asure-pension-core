@@ -1,11 +1,10 @@
 use asure_pension_core::common::Settings;
 //cargo run --example sim1
-use asure_pension_core::core::*;
-use asure_pension_core::pension::*;
+use asure_pension_core::*;
 
 fn main() {
-    println!("Hello, world!");
-    run();
+    println!("Pension Sim1");
+
     let mut settings = Settings::new();
     settings.eth = 10;
 
