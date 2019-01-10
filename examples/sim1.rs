@@ -1,6 +1,6 @@
-use asure_pension_core::common::Settings;
 //cargo run --example sim1
 use asure_pension_core::*;
+use asure_pension_core::common::Settings;
 
 fn main() {
     println!("Pension Sim1");
@@ -40,7 +40,12 @@ fn main() {
         }
 
         pension.start();
-        pension.pay();
+        let mut sum: f64 = 0.0;
+        for user in &mut pension.users {
+            user.pay(pension.current_period, 20.0);
+            sum += 20.0;
+        }
+        pension.add_amount(sum);
         pension.payout();
         pension.end();
 

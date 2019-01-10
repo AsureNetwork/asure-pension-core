@@ -53,12 +53,18 @@ impl User {
         true
     }
 
-    pub fn pay_into_pension(&mut self, period: u64, amount: f64) {
-        let tx = Transaction::new(period, amount);
+    pub fn pay(&mut self, period: u64, amount: f64) -> bool {
+        if self.pension_payment_months == 480 {
+            self.activate_retirement();
+            return false;
+        }
 
+        let tx = Transaction::new(period, amount);
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
         self.transactions.push(tx);
+
+        return true;
     }
 }
 
