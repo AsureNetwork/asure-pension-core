@@ -48,7 +48,7 @@ fn main() {
 
                 //    (user.PensionPaymentMonths+ " = "+user.PensionRecivedMonths+" / "+user.PensionReciveMonths));
 
-                println!("{} - {}", user.name, user.total);
+                println!("{} - {} {} DPT: {}", user.name, user.eth, user.pension_eth, user.wallet.dpt.amount);
 //            Console.WriteLine(
 //                user.Name + "," +
 //                    user.Total + "," +
