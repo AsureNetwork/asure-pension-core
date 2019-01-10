@@ -61,13 +61,29 @@ mod tests {
         let sumres = calculations::avg();
         assert_eq!(sumres, 7.0);
 
-        let result = calculations::calculate_points(
+        let mut result = calculations::calculate_points(
             10.0,
             1.0,
             10.0,
             10.0,
-            10.0);
+            20.0);
         assert_eq!(result, 1.0);
+
+        result = calculations::calculate_points(
+            10.0,
+            1.0,
+            20.0,
+            10.0,
+            20.0);
+        assert_eq!(result, 2.0);
+
+        result = calculations::calculate_points(
+            10.0,
+            1.0,
+            1.0,
+            1.0,
+            20.0);
+        assert_eq!(result, 2.0);
     }
 
     #[test]
