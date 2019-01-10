@@ -17,19 +17,24 @@ fn main() {
     let total_months = payment_months * generations;
 
     for i in 0..total_months {
-        if i % 12 == 0 && i < 480 * 2 {
-            pension.create_users(2);
-        }
+        // until the nth (2) generation
+        if i < 2 * payment_months {
+            // add n (2) new users every year
+            if i % 12 == 0 {
+                pension.create_users(2);
+            }
 
-        if i % 24 == 0 && i < 480 * 2 {
-            let mut counter = 0;
-            for user in &mut pension.users {
-                if user.activate_retirement() {
-                    counter = counter + 1;
-                }
+            // retire user every two years
+            if i % 24 == 0 {
+                let mut counter = 0;
+                for user in &mut pension.users {
+                    if user.activate_retirement() {
+                        counter = counter + 1;
+                    }
 
-                if counter == 1 {
-                    break;
+                    if counter == 1 {
+                        break;
+                    }
                 }
             }
         }
