@@ -29,6 +29,8 @@ impl Settings {
 
 
 pub mod calculations {
+    pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
+
     pub fn avg() -> f64 {
         let sum: f64 = 21.0;
         let len: usize = 3;
@@ -46,9 +48,31 @@ pub mod calculations {
             return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
         }
         if amount < ccv {
-            return ((amount - min) / (ccv - min)) * current_avg_points;
+            let more_min = min - MIN_POSITIVE;
+            return ((amount - more_min) / (ccv - more_min)) * current_avg_points;
         }
-        1f64
+        1f64 //amount == ccv
+    }
+
+    pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
+        assert_ne!(index, 0);
+        if index >= 40 * 12 {
+            return 1.0;
+        }
+        let year = index % 12;
+        calculate_avg_points_factor(year)
+    }
+
+    pub fn calculate_avg_points_factor(year: u64) -> f64 {
+        assert_ne!(year, 0);
+        if year >= 40 {
+            return 1.0;
+        }
+        let y = year as f64;
+        //[1,5..1.0] in 40 years
+        //1.0+(40+1)^2/40/40*0,5
+        let result = 1.0 + (((40.0 + 1.0 - y) * (40.0 + 1.0 - y)) / 40.0) / 40.0 * 0.5;
+        result
     }
 }
 
@@ -83,7 +107,29 @@ mod tests {
             1.0,
             1.0,
             20.0);
-        assert_eq!(result, 2.0);
+        assert_eq!(result, 0.000000000000000012335811384723961);
+    }
+
+    #[test]
+    fn calculate_avg_points_factor() {
+        let mut result = calculations::calculate_avg_points_factor(
+            1);
+        assert_eq!(result, 1.5);
+
+        result = calculations::calculate_avg_points_factor(
+            40);
+        assert_eq!(result, 1.0);
+    }
+
+    #[test]
+    fn calculate_avg_points_factor_by_period() {
+        let mut result = calculations::calculate_avg_points_factor_by_period(
+            1);
+        assert_eq!(result, 1.5);
+
+        result = calculations::calculate_avg_points_factor_by_period(
+            40 * 12);
+        assert_eq!(result, 1.0);
     }
 
     #[test]
