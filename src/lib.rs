@@ -21,7 +21,7 @@ pub struct Pension {
     pub total_month_dpt: f64,
     pub total_retirement_dpt: f64,
     pub users: Vec<User>,
-    pub current_period: u32,
+    pub current_period: u64,
     pub settings: Settings,
 }
 

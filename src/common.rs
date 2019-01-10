@@ -54,7 +54,16 @@ pub mod calculations {
         1f64 //amount == ccv
     }
 
-    pub fn calculate_avg_points_factor(year: u32) -> f64 {
+    pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
+        assert_ne!(index, 0);
+        if index >= 40 * 12 {
+            return 1.0;
+        }
+        let year = index % 12;
+        calculate_avg_points_factor(year)
+    }
+
+    pub fn calculate_avg_points_factor(year: u64) -> f64 {
         assert_ne!(year, 0);
         if year >= 40 {
             return 1.0;
@@ -99,6 +108,28 @@ mod tests {
             1.0,
             20.0);
         assert_eq!(result, 0.000000000000000012335811384723961);
+    }
+
+    #[test]
+    fn calculate_avg_points_factor() {
+        let mut result = calculations::calculate_avg_points_factor(
+            1);
+        assert_eq!(result, 1.5);
+
+        result = calculations::calculate_avg_points_factor(
+            40);
+        assert_eq!(result, 1.0);
+    }
+
+    #[test]
+    fn calculate_avg_points_factor_by_period() {
+        let mut result = calculations::calculate_avg_points_factor_by_period(
+            1);
+        assert_eq!(result, 1.5);
+
+        result = calculations::calculate_avg_points_factor_by_period(
+            40 * 12);
+        assert_eq!(result, 1.0);
     }
 
     #[test]

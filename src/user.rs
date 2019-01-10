@@ -54,7 +54,7 @@ impl User {
         true
     }
 
-    pub fn pay_into_pension(&mut self, period: u32, amount: f64) {
+    pub fn pay_into_pension(&mut self, period: u64, amount: f64) {
         let tx = Transaction::new(period, amount);
 
         self.wallet.eth -= tx.amount;
