@@ -46,6 +46,7 @@ fn main() {
             sum += 20.0;
         }
         pension.add_amount(sum);
+
         pension.payout();
         pension.end();
 

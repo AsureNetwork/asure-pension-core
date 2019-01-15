@@ -30,12 +30,12 @@ impl Settings {
 
 pub mod calculations {
     pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
-
-    pub fn avg() -> f64 {
-        let sum: f64 = 21.0;
-        let len: usize = 3;
-        sum / len as f64
-    }
+//
+//    pub fn avg() -> f64 {
+//        let sum: f64 = 21.0;
+//        let len: usize = 3;
+//        sum / len as f64
+//    }
 
 
     pub fn calculate_points(current_contribution_value: f64,
@@ -44,12 +44,15 @@ pub mod calculations {
                             min: f64,
                             max: f64) -> f64 {
         let ccv = current_contribution_value;
+
         if amount > ccv {
             return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
         }
-        if amount < ccv {
-            let more_min = min - MIN_POSITIVE;
-            return ((amount - more_min) / (ccv - more_min)) * current_avg_points;
+        if amount < ccv && min != amount {
+            return ((amount - min) / (ccv - min)) * current_avg_points;
+        } else if amount < ccv && min == amount {
+            let minx = min - MIN_POSITIVE;
+            return ((amount - minx) / (ccv - minx)) * current_avg_points;
         }
         1f64 //amount == ccv
     }
@@ -82,8 +85,8 @@ mod tests {
 
     #[test]
     fn calculate_points() {
-        let sumres = calculations::avg();
-        assert_eq!(sumres, 7.0);
+        //let sumres = calculations::avg();
+        //assert_eq!(sumres, 7.0);
 
         let mut result = calculations::calculate_points(
             10.0,
