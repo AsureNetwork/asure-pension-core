@@ -53,18 +53,26 @@ impl User {
         true
     }
 
-    pub fn pay(&mut self, period: u64, amount: f64) -> bool {
-        if self.pension_payment_months == 480 {
-            self.activate_retirement();
-            return false;
+    pub fn pay(&mut self, period: u64, amount: f64) -> Result<(), String> {
+        if self.retirement {
+            return Err(String::from("Already retired"));
         }
+
+        if self.pension_payment_months >= 480 {
+            return Err(format!("Already payed {} month", self.pension_payment_months));
+        }
+
+//        if self.pension_payment_months == 480 {
+//            self.activate_retirement();
+//            return false;
+//        }
 
         let tx = Transaction::new(period, amount);
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
         self.transactions.push(tx);
 
-        return true;
+        Ok(())
     }
 }
 
