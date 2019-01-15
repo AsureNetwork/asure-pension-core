@@ -48,11 +48,11 @@ pub mod calculations {
         if amount > ccv {
             return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
         }
-        if amount < ccv && min != amount {
-            return ((amount - min) / (ccv - min)) * current_avg_points;
-        } else if amount < ccv && min == amount {
-            let minx = min - MIN_POSITIVE;
-            return ((amount - minx) / (ccv - minx)) * current_avg_points;
+        if amount < ccv {
+//            return ((amount - min) / (ccv - min)) * current_avg_points;
+//        } else if amount < ccv && min == amount {
+//            let minx = min - MIN_POSITIVE;
+            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
         }
         1f64 //amount == ccv
     }
@@ -110,7 +110,31 @@ mod tests {
             1.0,
             1.0,
             20.0);
-        assert_eq!(result, 0.000000000000000012335811384723961);
+        assert_eq!(result, 0.09999999999999999);
+    }
+
+    #[test]
+    fn calculate_points_in_loop() {
+        //let sumres = calculations::avg();
+        //assert_eq!(sumres, 7.0);
+
+        let mut result = 0.0;
+        for _n in 1..100 {
+            result += calculations::calculate_points(
+                10.0,
+                1.0,
+                1.0,
+                1.0,
+                100.0);
+        }
+        assert_eq!(result, 9.89999999999998);
+        result = calculations::calculate_points(
+            10.0,
+            1.0,
+            100.0,
+            1.0,
+            100.0);
+        assert_eq!(result, 2.0);
     }
 
     #[test]
