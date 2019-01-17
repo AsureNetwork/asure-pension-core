@@ -42,8 +42,10 @@ fn main() {
         pension.start();
         let mut sum: f64 = 0.0;
         for user in &mut pension.users {
-            user.pay(pension.current_period, 20.0);
-            sum += 20.0;
+            match user.pay(pension.current_period, 20.0) {
+                Ok(()) => sum += 20.0,
+                Err(_) => {}
+            }
         }
         pension.add_amount(sum);
 
