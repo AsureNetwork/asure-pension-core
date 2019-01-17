@@ -1,6 +1,7 @@
 use asure_pension_core::*;
 use asure_pension_core::common::Settings;
-use asure_pension_core::user::PensionStatus;
+use asure_pension_core::user::{User, PensionStatus};
+use asure_pension_core::csvexport::{PensionCsvExporter};
 
 fn main() {
     println!("Pension Simulation 0");
@@ -9,6 +10,7 @@ fn main() {
     settings.eth = 10;
 
     let mut pension = Pension::new();
+    let mut pension_exporter = PensionCsvExporter::new();
 
     let payment_count = 40 * 12; // 40 years, every month
     let payment = 1.0;
@@ -20,7 +22,8 @@ fn main() {
         pension.start();
 
         let mut amount = 0.0;
-        for user in &mut pension.users {
+        let contributors: Vec<&mut User> = pension.users.iter_mut().filter(|user| user.pension_status == PensionStatus::Run).collect();
+        for user in contributors {
             match user.pay(pension.current_period, payment) {
                 Ok(()) => amount += payment,
                 Err(_) => {}
@@ -28,8 +31,11 @@ fn main() {
         }
         pension.add_amount(amount);
 
+        pension.payout();
         pension.end();
+
         print(&pension);
+        pension_exporter.add_users(&pension);
     }
 
     // retire all current users
@@ -44,7 +50,8 @@ fn main() {
         pension.start();
 
         let mut amount = 0.0;
-        for user in &mut pension.users.iter_mut().filter(|user| user.pension_status == PensionStatus::Run) {
+        let contributors: Vec<&mut User> = pension.users.iter_mut().filter(|user| user.pension_status == PensionStatus::Run).collect();
+        for user in contributors {
             match user.pay(pension.current_period, payment) {
                 Ok(()) => amount += payment,
                 Err(_) => {}
@@ -54,8 +61,12 @@ fn main() {
 
         pension.payout();
         pension.end();
+
         print(&pension);
+        pension_exporter.add_users(&pension);
     }
+
+    pension_exporter.export("sim0.csv");
 }
 
 fn print(pension: &Pension) {
