@@ -91,9 +91,9 @@ mod tests {
     fn should_activate_retirement() {
         let mut user = User::new();
 
-        assert_eq!(user.pension_status, PensionStatus::Run);
+        assert!(user.pension_status == PensionStatus::Run);
         user.activate_retirement();
-        assert_eq!(user.pension_status, PensionStatus::Retirement);
+        assert!(user.pension_status == PensionStatus::Retirement);
     }
 }
 
