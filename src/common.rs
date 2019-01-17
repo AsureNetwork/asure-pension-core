@@ -1,7 +1,7 @@
 pub struct Settings {
     pub period: u64,
     pub current_avg_points: f64,
-    pub current_points_degree: f64,
+    pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,
     pub eth: u128,
     pub tokens: f64,
@@ -15,7 +15,7 @@ impl Settings {
         Settings {
             period: 1,
             current_avg_points: 1.5,
-            current_points_degree: 10.0,
+            current_contribution_value_degree: 10.0,
             current_contribution_value: 10.0,
             eth: 0,
             tokens: 0.0,
@@ -37,6 +37,28 @@ pub mod calculations {
 //        sum / len as f64
 //    }
 
+    pub fn median(numbers: &mut [f64]) -> f64 {
+        //numbers.sort();
+        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mid = numbers.len() / 2;
+        numbers[mid]
+    }
+
+    pub fn calculate_contribution_value(settings: &super::Settings, numbers: &[f64]) -> f64 {
+        let mut nums = numbers.to_vec();
+        let ref_value = self::median(&mut nums);
+        let ccv = settings.current_contribution_value;
+        let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
+
+        if diff > settings.current_contribution_value_degree {
+            if ref_value < settings.current_contribution_value {
+                return settings.current_contribution_value * (1.0 + settings.current_contribution_value_degree / 100.0);
+            } else {
+                return settings.current_contribution_value * (1.0 - settings.current_contribution_value_degree / 100.0);
+            }
+        }
+        return settings.current_contribution_value;
+    }
 
     pub fn calculate_points(current_contribution_value: f64,
                             current_avg_points: f64,
@@ -81,6 +103,35 @@ pub mod calculations {
 #[cfg(test)]
 mod tests {
     use crate::common::*;
+
+    #[test]
+    fn median() {
+        let mut numbers: [f64; 13] = [
+            42.0, 1.0, 36.0,
+            34.0, 76.0, 378.0,
+            43.0, 1.0, 43.0,
+            54.0, 2.0, 3.0, 43.0];
+        let result = calculations::median(&mut numbers);
+
+        assert_eq!(result, 42.0);
+    }
+
+    #[test]
+    fn calculate_contribution_value() {
+        let mut numbers: [f64; 13] = [
+            42.0, 1.0, 36.0,
+            34.0, 76.0, 378.0,
+            43.0, 1.0, 43.0,
+            54.0, 2.0, 3.0, 43.0];
+        let settings = super::Settings::new();
+
+        let result = calculations::calculate_contribution_value(
+            &settings,
+            &mut numbers);
+
+        assert_eq!(result, 9.0);
+    }
+
 
     #[test]
     fn calculate_points() {

@@ -167,9 +167,9 @@ impl Pension {
         let minus = period_amounts.clone().filter(|amount| *amount < self.settings.current_contribution_value).count();
 
         self.settings.current_contribution_value = if plus > minus {
-            self.settings.current_contribution_value * (1.0 + self.settings.current_points_degree / 100.0)
+            self.settings.current_contribution_value * (1.0 + self.settings.current_contribution_value_degree / 100.0)
         } else {
-            self.settings.current_contribution_value * (1.0 - self.settings.current_points_degree / 100.0)
+            self.settings.current_contribution_value * (1.0 - self.settings.current_contribution_value_degree / 100.0)
         };
 
 //        let sum: f64 = period_amounts.clone().sum();
