@@ -164,25 +164,19 @@ impl Pension {
             .iter()
             .flat_map(|user| &user.transactions)
             .filter(|tx| tx.period == period)
-            .map(|tx| tx.amount);
+            .map(|tx| tx.amount)
+            .collect::<Vec<_>>();
 
-        if period_amounts.clone().count() == 0 {
+        if period_amounts.len() == 0 {
             return;
         }
 
-        let plus = period_amounts.clone().filter(|amount| *amount > self.settings.current_contribution_value).count();
-        let minus = period_amounts.clone().filter(|amount| *amount < self.settings.current_contribution_value).count();
-
-        self.settings.current_contribution_value = if plus > minus {
-            self.settings.current_contribution_value * (1.0 + self.settings.current_contribution_value_degree / 100.0)
-        } else {
-            self.settings.current_contribution_value * (1.0 - self.settings.current_contribution_value_degree / 100.0)
-        };
+        self.settings.current_contribution_value = calculations::calculate_contribution_value(&self.settings, &period_amounts);
 
 //        let sum: f64 = period_amounts.clone().sum();
 //        let avg: f64 = sum / period_amounts.clone().count() as f64;
 
-        let mut sorted_period_amounts: Vec<f64> = period_amounts.clone().collect();
+        let mut sorted_period_amounts: Vec<f64> = period_amounts.to_vec();
         sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
 
         let _min = *sorted_period_amounts.first().unwrap();
