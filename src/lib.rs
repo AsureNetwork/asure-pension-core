@@ -131,12 +131,11 @@ impl Pension {
             });
     }
 
-    pub fn calculate_points(&self, amount: f64, min: f64, max: f64) -> f64 {
+    pub fn calculate_points(&self, amount: f64, max: f64) -> f64 {
         let result = calculations::calculate_points(
             self.settings.current_contribution_value,
             self.settings.current_avg_points,
             amount,
-            min,
             max,
         );
         result
@@ -179,7 +178,7 @@ impl Pension {
         let mut sorted_period_amounts: Vec<f64> = period_amounts.clone().collect();
         sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
 
-        let min = *sorted_period_amounts.first().unwrap();
+        let _min = *sorted_period_amounts.first().unwrap();
         let max = *sorted_period_amounts.last().unwrap();
 
         self.total_month_dpt = 0.0;
@@ -191,7 +190,6 @@ impl Pension {
                     self.settings.current_contribution_value,
                     self.settings.current_avg_points,
                     tx.amount,
-                    min,
                     max,
                 );
                 self.settings.tokens += amount;
@@ -241,7 +239,7 @@ mod tests {
     fn calculate_points_should_be_one() {
         let mut pension = Pension::new();
         pension.settings.current_contribution_value = 10.0;
-        let result_one = pension.calculate_points(10.0, 1.0, 100.0);
+        let result_one = pension.calculate_points(10.0, 100.0);
         assert_eq!(result_one, 1.0);
     }
 

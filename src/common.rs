@@ -41,7 +41,6 @@ pub mod calculations {
     pub fn calculate_points(current_contribution_value: f64,
                             current_avg_points: f64,
                             amount: f64,
-                            min: f64,
                             max: f64) -> f64 {
         let ccv = current_contribution_value;
 
@@ -92,7 +91,6 @@ mod tests {
             10.0,
             1.0,
             10.0,
-            10.0,
             20.0);
         assert_eq!(result, 1.0);
 
@@ -100,13 +98,11 @@ mod tests {
             10.0,
             1.0,
             20.0,
-            10.0,
             20.0);
         assert_eq!(result, 2.0);
 
         result = calculations::calculate_points(
             10.0,
-            1.0,
             1.0,
             1.0,
             20.0);
@@ -124,7 +120,6 @@ mod tests {
                 10.0,
                 1.0,
                 1.0,
-                1.0,
                 100.0);
         }
         assert_eq!(result, 9.89999999999998);
@@ -132,7 +127,6 @@ mod tests {
             10.0,
             1.0,
             100.0,
-            1.0,
             100.0);
         assert_eq!(result, 2.0);
     }
