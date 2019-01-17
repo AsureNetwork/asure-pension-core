@@ -35,6 +35,7 @@ fn main() {
         pension.end();
 
         print(&pension);
+        pension_exporter.add_pension(&pension);
         pension_exporter.add_users(&pension);
     }
 
@@ -63,10 +64,12 @@ fn main() {
         pension.end();
 
         print(&pension);
+        pension_exporter.add_pension(&pension);
         pension_exporter.add_users(&pension);
     }
 
-    pension_exporter.export("sim0.csv");
+    pension_exporter.export_pensions("sim0-pensions.csv");
+    pension_exporter.export_users("sim0-users.csv");
 }
 
 fn print(pension: &Pension) {

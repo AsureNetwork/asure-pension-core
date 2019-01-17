@@ -27,14 +27,32 @@ impl CsvUser {
     }
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CsvPension {
+    period: u64,
+    total_eth: f64,
+}
+
+impl CsvPension {
+    pub fn new(pension: &Pension) -> Self {
+        CsvPension {
+            period: pension.current_period,
+            total_eth: pension.total_eth,
+        }
+    }
+}
+
 pub struct PensionCsvExporter {
     csv_users: Vec<CsvUser>,
+    csv_pensions: Vec<CsvPension>,
 }
 
 impl PensionCsvExporter {
     pub fn new() -> Self {
         PensionCsvExporter {
             csv_users: Vec::new(),
+            csv_pensions: Vec::new(),
         }
     }
 
@@ -50,9 +68,22 @@ impl PensionCsvExporter {
         ()
     }
 
-    pub fn export<P>(&mut self, path: P) where P: AsRef<Path> {
+    pub fn add_pension(&mut self, pension: &Pension) {
+        self.csv_pensions.push(CsvPension::new(pension));
+
+        ()
+    }
+
+    pub fn export_users<P>(&mut self, path: P) where P: AsRef<Path> {
         match export_csv(path, &self.csv_users) {
             Ok(()) => println!("user csv export erfolgreich"),
+            Err(error) => eprintln!("{}", error),
+        }
+    }
+
+    pub fn export_pensions<P>(&mut self, path: P) where P: AsRef<Path> {
+        match export_csv(path, &self.csv_pensions) {
+            Ok(()) => println!("pension csv export erfolgreich"),
             Err(error) => eprintln!("{}", error),
         }
     }
