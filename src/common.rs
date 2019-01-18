@@ -63,20 +63,20 @@ pub mod calculations {
         return contribution_value;
     }
 
-    pub fn calculate_points(current_contribution_value: f64,
-                            current_avg_points: f64,
+    pub fn calculate_points(contribution_value: f64,
+                            avg_points: f64,
                             amount: f64,
                             max: f64) -> f64 {
-        let ccv = current_contribution_value;
+        let ccv = contribution_value;
 
         if amount > ccv {
-            return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
+            return (1f64 + (amount - ccv) / (max - ccv)) * avg_points;
         }
         if amount < ccv {
-            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
+            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * avg_points;
         }
-        //println!("HIER ist {}", 1f64 * current_avg_points);
-        1f64 * current_avg_points //amount == ccv
+        //println!("HIER ist {}", 1f64 * avg_points);
+        1f64 * avg_points //amount == ccv
     }
 
     pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
