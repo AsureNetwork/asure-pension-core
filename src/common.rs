@@ -16,7 +16,7 @@ impl Settings {
             period: 1,
             current_avg_points: 1.5,
             current_contribution_value_degree: 10.0,
-            current_contribution_value: 10.0,
+            current_contribution_value: 1.0,
             eth: 0,
             tokens: 0.0,
         }
@@ -75,7 +75,7 @@ pub mod calculations {
         if amount < ccv {
             return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
         }
-        1f64 //amount == ccv
+        1f64 * current_avg_points //amount == ccv
     }
 
     pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
@@ -124,14 +124,14 @@ mod tests {
 
     #[test]
     fn calculate_contribution_value() {
-        let mut numbers = [1.0, 0.1, 5.0];
+        let mut numbers = [1.0, 1.0, 1.0];
         let settings = super::Settings::new();
 
         let result = calculations::calculate_contribution_value(
             &settings,
             &mut numbers);
 
-        assert_eq!(result, 11.0);
+        assert_eq!(result, 1.0);
     }
 
 
@@ -160,6 +160,13 @@ mod tests {
             1.0,
             20.0);
         assert_eq!(result, 0.09999999999999999);
+
+        result = calculations::calculate_points(
+            1.0,
+            1.5,
+            1.0,
+            1.0);
+        assert_eq!(result, 1.5);
     }
 
     #[test]

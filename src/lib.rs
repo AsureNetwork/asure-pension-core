@@ -7,12 +7,12 @@ extern crate serde_derive;
 
 
 use std::cmp::Ordering::Equal;
-//use std::cell::RefCell;
-//use std::rc::Rc;
 
 use crate::common::*;
 use crate::user::*;
 
+//use std::cell::RefCell;
+//use std::rc::Rc;
 
 pub mod common;
 pub mod csvexport;
@@ -185,9 +185,10 @@ impl Pension {
                     max,
                 );
                 self.settings.tokens += amount;
-                user.wallet.dpt.amount += amount;
                 self.total_month_dpt += amount;
                 self.total_dpt += amount;
+                user.wallet.dpt.amount += amount;
+                user.last_dpt = amount;
             }
         }
     }
