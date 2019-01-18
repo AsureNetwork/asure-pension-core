@@ -138,46 +138,52 @@ mod tests {
         assert_eq!(result, 1.0);
     }
 
-
     #[test]
-    fn calculate_points() {
-        //let sumres = calculations::avg();
-        //assert_eq!(sumres, 7.0);
-
-        let mut result = calculations::calculate_points(
+    fn calculate_points_0() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             10.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 1.0);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_1() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             20.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 2.0);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_2() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             1.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 0.09999999999999999);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_3() {
+        let result = calculations::calculate_points(
             1.0,
             1.5,
             1.0,
-            1.0);
+            1.0,
+        );
         assert_eq!(result, 1.5);
     }
 
     #[test]
     fn calculate_points_in_loop() {
-        //let sumres = calculations::avg();
-        //assert_eq!(sumres, 7.0);
-
         let mut result = 0.0;
         for _n in 1..100 {
             result += calculations::calculate_points(
