@@ -78,16 +78,15 @@ pub mod calculations {
         if amount < ccv {
             return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) + dpt_bonus;
         }
-        //println!("HIER ist {} {}", 1f64 + dpt_bonus, dpt_bonus);
         1f64 + dpt_bonus //amount == ccv
     }
 
-    pub fn calculate_dpt_bonus_by_period(index: u64) -> f64 {
-        assert_ne!(index, 0);
-        if index >= 40 * 12 {
+    pub fn calculate_dpt_bonus_by_period(period: u64) -> f64 {
+        assert_ne!(period, 0);
+        if period >= 40 * 12 {
             return 0.0;
         }
-        let year = index % 12;
+        let year = (period / 12) + 1;
         calculate_dpt_bonus(year)
     }
 

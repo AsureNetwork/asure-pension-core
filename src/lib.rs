@@ -67,7 +67,7 @@ impl Pension {
     pub fn start(&mut self) {
         self.current_period += 1;
         self.total_month_eth = 0.0;
-        //self.settings.current_dpt_bonus = self.calculate_dpt_bonus();
+        self.settings.current_dpt_bonus = self.calculate_dpt_bonus();
     }
 
     pub fn add_amount(&mut self, amount: f64) {
@@ -197,8 +197,7 @@ impl Pension {
         if self.current_period >= 40 * 12 {
             return 0.0;
         }
-        let year = self.current_period % 12;
-        calculations::calculate_dpt_bonus(year)
+        calculations::calculate_dpt_bonus_by_period(self.current_period)
         // as f64;
         //[1,5..1.0] in 40 years
         //1.0+(40+1)^2/40/40*0,5
