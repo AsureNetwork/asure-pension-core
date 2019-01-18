@@ -97,51 +97,6 @@ mod tests {
         user.activate_retirement();
         assert!(user.pension_status == PensionStatus::Retirement);
     }
-
-
-    #[test]
-    fn pay_should_throw_error_already_retired(){
-        let mut user:User = User :: new();
-        user.pension_status = PensionStatus::Retirement;
-        assert!(user.pay(12, 100.0).is_err(), "Already retired")
-    }
-
-    #[test]
-    fn pay_should_throw_error_already_payed(){
-        let mut user:User = User::new();
-        user.pension_payment_months = 480;
-        assert!(user.pay(12, 100.0).is_err(), "Already payed {} month", user.pension_payment_months);
-    }
-
-    #[test]
-    fn pay_create_single_transaction(){
-        let mut user:User = User::new();
-        user.pension_payment_months = 0;
-        user.wallet.eth = 100.0;
-
-        user.pay(12, 10.0);
-
-        assert_eq!(user.transactions.len(), 1);
-        assert_eq!(user.wallet.eth, 90.0);
-        assert_eq!(user.pension_payment_months, 1);
-    }
-
-    #[test]
-    fn pay_ten_years_period(){
-        let mut user:User = User::new();
-        user.pension_payment_months = 0;
-        user.wallet.eth = 1000.0;
-
-        for period in 0..480 {
-            user.pay(period, 1.0);
-        }
-
-        assert_eq!(user.transactions.len(), 480);
-        assert_eq!(user.wallet.eth, 520.0);
-        assert_eq!(user.pension_payment_months, 480);
-
-    }
-
 }
 
 
