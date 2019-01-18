@@ -30,12 +30,13 @@ impl Settings {
 
 pub mod calculations {
     pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
-//
-//    pub fn avg() -> f64 {
-//        let sum: f64 = 21.0;
-//        let len: usize = 3;
-//        sum / len as f64
-//    }
+
+    pub fn avg(numbers: &mut [f64]) -> f64 {
+        //numbers.sort();
+        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mid = numbers.len() / 2;
+        numbers[mid]
+    }
 
     pub fn median(numbers: &mut [f64]) -> f64 {
         //numbers.sort();
@@ -50,11 +51,13 @@ pub mod calculations {
         let ccv = settings.current_contribution_value;
         let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
+        println!("ref_value {},ccv {} = diff {} ", ref_value, ccv, diff);
         if diff > settings.current_contribution_value_degree {
-            if ref_value < settings.current_contribution_value {
-                return settings.current_contribution_value * (1.0 + settings.current_contribution_value_degree / 100.0);
+            let factor = settings.current_contribution_value_degree / 100.0;
+            if ref_value > settings.current_contribution_value {
+                return settings.current_contribution_value * (1.0 + factor);
             } else {
-                return settings.current_contribution_value * (1.0 - settings.current_contribution_value_degree / 100.0);
+                return settings.current_contribution_value * (1.0 - factor);
             }
         }
         return settings.current_contribution_value;
@@ -70,9 +73,6 @@ pub mod calculations {
             return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
         }
         if amount < ccv {
-//            return ((amount - min) / (ccv - min)) * current_avg_points;
-//        } else if amount < ccv && min == amount {
-//            let minx = min - MIN_POSITIVE;
             return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
         }
         1f64 //amount == ccv
@@ -105,31 +105,33 @@ mod tests {
     use crate::common::*;
 
     #[test]
+    fn diff() {
+        let ref_value: f64 = 1.0;
+        let ccv: f64 = 1.0;
+        let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
+
+        assert_eq!(diff, 0.0);
+    }
+
+
+    #[test]
     fn median() {
-        let mut numbers: [f64; 13] = [
-            42.0, 1.0, 36.0,
-            34.0, 76.0, 378.0,
-            43.0, 1.0, 43.0,
-            54.0, 2.0, 3.0, 43.0];
+        let mut numbers = [1.0, 0.1, 5.0];
         let result = calculations::median(&mut numbers);
 
-        assert_eq!(result, 42.0);
+        assert_eq!(result, 1.0);
     }
 
     #[test]
     fn calculate_contribution_value() {
-        let mut numbers: [f64; 13] = [
-            42.0, 1.0, 36.0,
-            34.0, 76.0, 378.0,
-            43.0, 1.0, 43.0,
-            54.0, 2.0, 3.0, 43.0];
+        let mut numbers = [1.0, 0.1, 5.0];
         let settings = super::Settings::new();
 
         let result = calculations::calculate_contribution_value(
             &settings,
             &mut numbers);
 
-        assert_eq!(result, 9.0);
+        assert_eq!(result, 11.0);
     }
 
 
