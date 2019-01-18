@@ -62,11 +62,6 @@ impl User {
             return Err(format!("Already payed {} month", self.pension_payment_months));
         }
 
-//        if self.pension_payment_months == 480 {
-//            self.activate_retirement();
-//            return false;
-//        }
-
         let tx = Transaction::new(period, amount);
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
