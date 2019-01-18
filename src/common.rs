@@ -45,38 +45,38 @@ pub mod calculations {
         numbers[mid]
     }
 
-    pub fn calculate_contribution_value(settings: &super::Settings, numbers: &[f64]) -> f64 {
+    pub fn calculate_contribution_value(contribution_value: f64, contribution_value_degree: f64, numbers: &[f64]) -> f64 {
         let mut nums = numbers.to_vec();
         let ref_value = self::median(&mut nums);
-        let ccv = settings.current_contribution_value;
+        let ccv = contribution_value;
         let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
         println!("ref_value {},ccv {} = diff {} ", ref_value, ccv, diff);
-        if diff > settings.current_contribution_value_degree {
-            let factor = settings.current_contribution_value_degree / 100.0;
-            if ref_value > settings.current_contribution_value {
-                return settings.current_contribution_value * (1.0 + factor);
+        if diff > contribution_value_degree {
+            let factor = contribution_value_degree / 100.0;
+            if ref_value > contribution_value {
+                return contribution_value * (1.0 + factor);
             } else {
-                return settings.current_contribution_value * (1.0 - factor);
+                return contribution_value * (1.0 - factor);
             }
         }
-        return settings.current_contribution_value;
+        return contribution_value;
     }
 
-    pub fn calculate_points(current_contribution_value: f64,
-                            current_avg_points: f64,
+    pub fn calculate_points(contribution_value: f64,
+                            avg_points: f64,
                             amount: f64,
                             max: f64) -> f64 {
-        let ccv = current_contribution_value;
+        let ccv = contribution_value;
 
         if amount > ccv {
-            return (1f64 + (amount - ccv) / (max - ccv)) * current_avg_points;
+            return (1.0 + (amount - ccv) / (max - ccv)) * avg_points;
         }
         if amount < ccv {
-            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
+            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * avg_points;
         }
-        //println!("HIER ist {}", 1f64 * current_avg_points);
-        1f64 * current_avg_points //amount == ccv
+        //println!("HIER ist {}", 1f64 * avg_points);
+        1f64 * avg_points //amount == ccv
     }
 
     pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
@@ -126,55 +126,64 @@ mod tests {
     #[test]
     fn calculate_contribution_value() {
         let mut numbers = [1.0, 1.0, 1.0];
-        let settings = super::Settings::new();
+
+        let contribution_value = 1.0;
+        let contribution_value_degree = 10.0;
 
         let result = calculations::calculate_contribution_value(
-            &settings,
+            contribution_value,
+            contribution_value_degree,
             &mut numbers);
 
         assert_eq!(result, 1.0);
     }
 
-
     #[test]
-    fn calculate_points() {
-        //let sumres = calculations::avg();
-        //assert_eq!(sumres, 7.0);
-
-        let mut result = calculations::calculate_points(
+    fn calculate_points_0() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             10.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 1.0);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_1() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             20.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 2.0);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_2() {
+        let result = calculations::calculate_points(
             10.0,
             1.0,
             1.0,
-            20.0);
+            20.0,
+        );
         assert_eq!(result, 0.09999999999999999);
+    }
 
-        result = calculations::calculate_points(
+    #[test]
+    fn calculate_points_3() {
+        let result = calculations::calculate_points(
             1.0,
             1.5,
             1.0,
-            1.0);
+            1.0,
+        );
         assert_eq!(result, 1.5);
     }
 
     #[test]
     fn calculate_points_in_loop() {
-        //let sumres = calculations::avg();
-        //assert_eq!(sumres, 7.0);
-
         let mut result = 0.0;
         for _n in 1..100 {
             result += calculations::calculate_points(
