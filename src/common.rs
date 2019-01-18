@@ -75,6 +75,7 @@ pub mod calculations {
         if amount < ccv {
             return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * current_avg_points;
         }
+        //println!("HIER ist {}", 1f64 * current_avg_points);
         1f64 * current_avg_points //amount == ccv
     }
 
