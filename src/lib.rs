@@ -230,7 +230,7 @@ mod tests {
     fn calculate_points_should_be_one() {
         let mut pension = Pension::new();
         pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_avg_points = 1.0;
+        pension.settings.current_avg_points = 0.0;
         let result_one = pension.calculate_points(10.0, 100.0);
         assert_eq!(result_one, 1.0);
     }
@@ -239,7 +239,7 @@ mod tests {
     fn calculate_points_should_be_one_point_five() {
         let mut pension = Pension::new();
         pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_avg_points = 1.5;
+        pension.settings.current_avg_points = 0.5;
         let result_one = pension.calculate_points(10.0, 100.0);
         assert_eq!(result_one, 1.5);
     }

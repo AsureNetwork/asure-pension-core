@@ -14,7 +14,7 @@ impl Settings {
     pub fn new() -> Settings {
         Settings {
             period: 1,
-            current_avg_points: 1.5,
+            current_avg_points: 0.5,
             current_contribution_value_degree: 10.0,
             current_contribution_value: 1.0,
             eth: 0,
@@ -67,16 +67,17 @@ pub mod calculations {
                             avg_points: f64,
                             amount: f64,
                             max: f64) -> f64 {
+        assert!(avg_points >= 0.0 && avg_points <= 0.5);
         let ccv = contribution_value;
 
         if amount > ccv {
-            return (1.0 + (amount - ccv) / (max - ccv)) * avg_points;
+            return (1.0 + (amount - ccv) / (max - ccv)) + avg_points;
         }
         if amount < ccv {
-            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * avg_points;
+            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) + avg_points;
         }
-        //println!("HIER ist {}", 1f64 * avg_points);
-        1f64 * avg_points //amount == ccv
+        //println!("HIER ist {} {}", 1f64 + avg_points, avg_points);
+        1f64 + avg_points //amount == ccv
     }
 
     pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
@@ -142,7 +143,7 @@ mod tests {
     fn calculate_points_0() {
         let result = calculations::calculate_points(
             10.0,
-            1.0,
+            0.0,
             10.0,
             20.0,
         );
@@ -153,7 +154,7 @@ mod tests {
     fn calculate_points_1() {
         let result = calculations::calculate_points(
             10.0,
-            1.0,
+            0.0,
             20.0,
             20.0,
         );
@@ -164,7 +165,7 @@ mod tests {
     fn calculate_points_2() {
         let result = calculations::calculate_points(
             10.0,
-            1.0,
+            0.0,
             1.0,
             20.0,
         );
@@ -175,7 +176,7 @@ mod tests {
     fn calculate_points_3() {
         let result = calculations::calculate_points(
             1.0,
-            1.5,
+            0.5,
             1.0,
             1.0,
         );
@@ -188,14 +189,14 @@ mod tests {
         for _n in 1..100 {
             result += calculations::calculate_points(
                 10.0,
-                1.0,
+                0.0,
                 1.0,
                 100.0);
         }
         assert_eq!(result, 9.89999999999998);
         result = calculations::calculate_points(
             10.0,
-            1.0,
+            0.0,
             100.0,
             100.0);
         assert_eq!(result, 2.0);
