@@ -8,7 +8,6 @@ pub struct User {
     pub id: usize,
     pub name: String,
     pub wallet: Wallet,
-    pub retirement: bool,
     pub pension_status: PensionStatus,
     pub pension_payment_months: u128,
     pub pension_receive_months: u128,
@@ -34,7 +33,6 @@ impl User {
             id: USER_COUNTER.fetch_add(1, atomic::Ordering::SeqCst),
             name: String::from("UserName"),
             wallet: Wallet::new(),
-            retirement: false,
             pension_status: PensionStatus::Run,
             pension_payment_months: 0,
             pension_receive_months: 0,
@@ -49,22 +47,30 @@ impl User {
     }
 
     pub fn activate_retirement(&mut self) -> bool {
-        self.retirement = true;
+        self.pension_status = PensionStatus::Retirement;
         true
     }
 
-    pub fn pay(&mut self, period: u64, amount: f64) -> bool {
-        if self.pension_payment_months == 480 {
-            self.activate_retirement();
-            return false;
+    pub fn pay(&mut self, period: u64, amount: f64) -> Result<(), String> {
+        if self.pension_status == PensionStatus::Retirement {
+            return Err(String::from("Already retired"));
         }
+
+        if self.pension_payment_months >= 480 {
+            return Err(format!("Already payed {} month", self.pension_payment_months));
+        }
+
+//        if self.pension_payment_months == 480 {
+//            self.activate_retirement();
+//            return false;
+//        }
 
         let tx = Transaction::new(period, amount);
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
         self.transactions.push(tx);
 
-        return true;
+        Ok(())
     }
 }
 
@@ -85,9 +91,9 @@ mod tests {
     fn should_activate_retirement() {
         let mut user = User::new();
 
-        assert_eq!(user.retirement, false);
+        assert!(user.pension_status == PensionStatus::Run);
         user.activate_retirement();
-        assert_eq!(user.retirement, true);
+        assert!(user.pension_status == PensionStatus::Retirement);
     }
 }
 
