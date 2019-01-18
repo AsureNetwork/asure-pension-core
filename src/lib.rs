@@ -133,16 +133,6 @@ impl Pension {
             });
     }
 
-    pub fn calculate_points(&self, amount: f64, max: f64) -> f64 {
-        let result = calculations::calculate_dpt(
-            self.settings.current_contribution_value,
-            self.settings.current_dpt_bonus,
-            amount,
-            max,
-        );
-        result
-    }
-
     pub fn end(&mut self) {
         let period = self.current_period;
 
@@ -176,7 +166,6 @@ impl Pension {
 
         for user in &mut self.users {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
-//                let amount = (*self).calculate_points(tx.amount, min, max);
                 let amount = calculations::calculate_dpt(
                     self.settings.current_contribution_value,
                     self.settings.current_dpt_bonus,
@@ -226,24 +215,6 @@ mod tests {
 //        pension.start();
 //        assert!(pension.current_period);
 //    }
-
-    #[test]
-    fn calculate_points_should_be_one() {
-        let mut pension = Pension::new();
-        pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_dpt_bonus = 0.0;
-        let result_one = pension.calculate_points(10.0, 100.0);
-        assert_eq!(result_one, 1.0);
-    }
-
-    #[test]
-    fn calculate_points_should_be_one_point_five() {
-        let mut pension = Pension::new();
-        pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_dpt_bonus = 0.5;
-        let result_one = pension.calculate_points(10.0, 100.0);
-        assert_eq!(result_one, 1.5);
-    }
 
     #[test]
     fn calculate_avg_points_should_be_zero_to_zero_five() {
