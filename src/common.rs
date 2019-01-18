@@ -79,6 +79,10 @@ pub mod calculations {
         1f64 + dpt_bonus //amount == ccv
     }
 
+    pub fn calculate_entitlement_months(periods: u64) -> f64 {
+        return (periods as f64).powf(2.0) / 480f64;
+    }
+
     pub fn calculate_dpt_bonus_by_period(period: u64) -> f64 {
         assert_ne!(period, 0);
         if period >= 40 * 12 {

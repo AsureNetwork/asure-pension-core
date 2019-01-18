@@ -67,40 +67,13 @@ impl Pension {
     pub fn start(&mut self) {
         self.current_period += 1;
         self.total_month_eth = 0.0;
-        self.settings.current_dpt_bonus = self.calculate_dpt_bonus();
+        self.settings.current_dpt_bonus = calculations::calculate_dpt_bonus_by_period(self.current_period);
     }
 
     pub fn add_amount(&mut self, amount: f64) {
         self.total_eth += amount;
         self.total_month_eth += amount;
     }
-
-//    pub fn pay(&mut self) {
-//        self.total_month_eth = 0.0;
-//
-//        let period = self.current_period;
-//
-//        let result = self.users
-//            .iter_mut()
-//            .filter(|u| u.pension_status == PensionStatus::Run)
-//            .fold(PensionFold::new(), |mut state, user| {
-//                if user.pension_payment_months == 480 {
-//                    user.activate_retirement();
-//                    return state;
-//                }
-//
-//                let amount = 20.0;
-//                user.pay_into_pension(period, amount);
-//
-//                state.total_eth += amount;
-//                state.total_month_eth += amount;
-//
-//                return state;
-//            });
-//
-//        self.total_eth = result.total_eth;
-//        self.total_month_eth = result.total_month_eth;
-//    }
 
     pub fn payout(&mut self) {
         let total_retirement_dpt = self.users
@@ -177,18 +150,6 @@ impl Pension {
         }
     }
 
-    pub fn calculate_dpt_bonus(&self) -> f64 {
-        assert_ne!(self.current_period, 0);
-        if self.current_period >= 40 * 12 {
-            return 0.0;
-        }
-        calculations::calculate_dpt_bonus_by_period(self.current_period)
-        // as f64;
-        //[1,5..1.0] in 40 years
-        //1.0+(40+1)^2/40/40*0,5
-        //let result = 1.0 + (((40.0 + 1.0 - years) * (40.0 + 1.0 - years)) / 40.0) / 40.0 * 0.5;
-        //result
-    }
 }
 
 #[cfg(test)]
@@ -211,18 +172,18 @@ mod tests {
 //        assert!(pension.current_period);
 //    }
 
-    #[test]
-    fn calculate_avg_points_should_be_zero_to_zero_five() {
-        let mut pension = Pension::new();
-
-        pension.current_period = 1;
-        let result_zero_five = pension.calculate_dpt_bonus();
-        println!("{}", result_zero_five);
-        assert_eq!(result_zero_five, 0.5f64);
-
-        pension.current_period = 40 * 12;
-        let zero = pension.calculate_dpt_bonus();
-        println!("{}", zero);
-        assert_eq!(zero, 0.0f64);
-    }
+//    #[test]
+//    fn calculate_avg_points_should_be_zero_to_zero_five() {
+//        let mut pension = Pension::new();
+//
+//        pension.current_period = 1;
+//        let result_zero_five = pension.calculate_dpt_bonus();
+//        println!("{}", result_zero_five);
+//        assert_eq!(result_zero_five, 0.5f64);
+//
+//        pension.current_period = 40 * 12;
+//        let zero = pension.calculate_dpt_bonus();
+//        println!("{}", zero);
+//        assert_eq!(zero, 0.0f64);
+//    }
 }
