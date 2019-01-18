@@ -4,7 +4,6 @@ pub struct Settings {
     pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,
     pub eth: u128,
-    pub tokens: f64,
 }
 
 
@@ -18,7 +17,6 @@ impl Settings {
             current_contribution_value_degree: 10.0,
             current_contribution_value: 1.0,
             eth: 0,
-            tokens: 0.0,
         }
     }
 

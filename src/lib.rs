@@ -153,30 +153,26 @@ impl Pension {
             &period_amounts,
         );
 
-//        let sum: f64 = period_amounts.clone().sum();
-//        let avg: f64 = sum / period_amounts.clone().count() as f64;
-
         let mut sorted_period_amounts: Vec<f64> = period_amounts.to_vec();
         sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
 
-        let _min = *sorted_period_amounts.first().unwrap();
         let max = *sorted_period_amounts.last().unwrap();
 
         self.total_month_dpt = 0.0;
 
         for user in &mut self.users {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
-                let amount = calculations::calculate_dpt(
+                let dpt = calculations::calculate_dpt(
                     self.settings.current_contribution_value,
                     self.settings.current_dpt_bonus,
                     tx.amount,
                     max,
                 );
-                self.settings.tokens += amount;
-                self.total_month_dpt += amount;
-                self.total_dpt += amount;
-                user.wallet.dpt.amount += amount;
-                user.last_dpt = amount;
+
+                self.total_month_dpt += dpt;
+                self.total_dpt += dpt;
+                user.wallet.dpt.amount += dpt;
+                user.last_dpt = dpt;
             }
         }
     }
