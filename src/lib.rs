@@ -171,7 +171,11 @@ impl Pension {
             return;
         }
 
-        self.settings.current_contribution_value = calculations::calculate_contribution_value(&self.settings, &period_amounts);
+        self.settings.current_contribution_value = calculations::calculate_contribution_value(
+            self.settings.current_contribution_value,
+            self.settings.current_contribution_value_degree,
+            &period_amounts,
+        );
 
 //        let sum: f64 = period_amounts.clone().sum();
 //        let avg: f64 = sum / period_amounts.clone().count() as f64;

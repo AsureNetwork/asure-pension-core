@@ -45,22 +45,22 @@ pub mod calculations {
         numbers[mid]
     }
 
-    pub fn calculate_contribution_value(settings: &super::Settings, numbers: &[f64]) -> f64 {
+    pub fn calculate_contribution_value(contribution_value: f64, contribution_value_degree: f64, numbers: &[f64]) -> f64 {
         let mut nums = numbers.to_vec();
         let ref_value = self::median(&mut nums);
-        let ccv = settings.current_contribution_value;
+        let ccv = contribution_value;
         let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
         println!("ref_value {},ccv {} = diff {} ", ref_value, ccv, diff);
-        if diff > settings.current_contribution_value_degree {
-            let factor = settings.current_contribution_value_degree / 100.0;
-            if ref_value > settings.current_contribution_value {
-                return settings.current_contribution_value * (1.0 + factor);
+        if diff > contribution_value_degree {
+            let factor = contribution_value_degree / 100.0;
+            if ref_value > contribution_value {
+                return contribution_value * (1.0 + factor);
             } else {
-                return settings.current_contribution_value * (1.0 - factor);
+                return contribution_value * (1.0 - factor);
             }
         }
-        return settings.current_contribution_value;
+        return contribution_value;
     }
 
     pub fn calculate_points(current_contribution_value: f64,
@@ -126,10 +126,13 @@ mod tests {
     #[test]
     fn calculate_contribution_value() {
         let mut numbers = [1.0, 1.0, 1.0];
-        let settings = super::Settings::new();
+
+        let contribution_value = 1.0;
+        let contribution_value_degree = 10.0;
 
         let result = calculations::calculate_contribution_value(
-            &settings,
+            contribution_value,
+            contribution_value_degree,
             &mut numbers);
 
         assert_eq!(result, 1.0);
