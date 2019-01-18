@@ -70,7 +70,7 @@ pub mod calculations {
         let ccv = contribution_value;
 
         if amount > ccv {
-            return (1f64 + (amount - ccv) / (max - ccv)) * avg_points;
+            return (1.0 + (amount - ccv) / (max - ccv)) * avg_points;
         }
         if amount < ccv {
             return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * avg_points;

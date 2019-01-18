@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs::File;
 use serde::Serialize;
+use serde_derive::*;
 use crate::user::User;
 use crate::Pension;
 use std::path::Path;
