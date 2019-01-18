@@ -31,11 +31,9 @@ impl Settings {
 pub mod calculations {
     pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
 
-    pub fn avg(numbers: &mut [f64]) -> f64 {
-        //numbers.sort();
-        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let mid = numbers.len() / 2;
-        numbers[mid]
+    pub fn avg(numbers: &[f64]) -> f64 {
+        let sum: f64 = numbers.iter().sum();
+        sum as f64 / numbers.len() as f64
     }
 
     pub fn median(numbers: &mut [f64]) -> f64 {
@@ -45,7 +43,9 @@ pub mod calculations {
         numbers[mid]
     }
 
-    pub fn calculate_contribution_value(contribution_value: f64, contribution_value_degree: f64, numbers: &[f64]) -> f64 {
+    pub fn calculate_contribution_value(contribution_value: f64,
+                                        contribution_value_degree: f64,
+                                        numbers: &[f64]) -> f64 {
         let mut nums = numbers.to_vec();
         let ref_value = self::median(&mut nums);
         let ccv = contribution_value;
@@ -68,6 +68,8 @@ pub mod calculations {
                             amount: f64,
                             max: f64) -> f64 {
         assert!(avg_points >= 0.0 && avg_points <= 0.5);
+        assert!(max >= amount);
+
         let ccv = contribution_value;
 
         if amount > ccv {
@@ -115,6 +117,12 @@ mod tests {
         assert_eq!(diff, 0.0);
     }
 
+    #[test]
+    fn avg() {
+        let numbers = [1.0, 0.0, 5.0];
+        let result = calculations::avg(&numbers);
+        assert_eq!(result, 2.0);
+    }
 
     #[test]
     fn median() {

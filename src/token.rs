@@ -6,7 +6,7 @@ pub struct Token {
 impl Token{
     pub fn new() -> Token {
         Token{
-            name: String::from("ETH"),
+            name: String::from("DPT"),
             amount: 0.0
         }
     }
