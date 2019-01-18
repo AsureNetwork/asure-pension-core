@@ -194,7 +194,7 @@ impl Pension {
     pub fn calculate_avg_points(&self) -> f64 {
         assert_ne!(self.current_period, 0);
         if self.current_period >= 40 * 12 {
-            return 1.0;
+            return 0.0;
         }
         let year = self.current_period % 12;
         calculations::calculate_avg_points_factor(year)
@@ -245,15 +245,17 @@ mod tests {
     }
 
     #[test]
-    fn calculate_avg_points_should_be_one_five_to_one() {
+    fn calculate_avg_points_should_be_zero_to_zero_five() {
         let mut pension = Pension::new();
+
         pension.current_period = 1;
-        let result_one_five = pension.calculate_avg_points();
-        println!("{}", result_one_five);
-        assert_eq!(result_one_five, 1.5f64);
+        let result_zero_five = pension.calculate_avg_points();
+        println!("{}", result_zero_five);
+        assert_eq!(result_zero_five, 0.5f64);
 
         pension.current_period = 40 * 12;
-        let result_one_five = pension.calculate_avg_points();
-        assert_eq!(result_one_five, 1.0f64);
+        let zero = pension.calculate_avg_points();
+        println!("{}", zero);
+        assert_eq!(zero, 0.0f64);
     }
 }
