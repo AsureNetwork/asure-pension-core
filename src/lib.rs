@@ -163,9 +163,9 @@ impl Pension {
         for user in &mut self.users {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
                 let dpt = calculations::calculate_dpt(
+                    tx.amount,
                     self.settings.current_contribution_value,
                     self.settings.current_dpt_bonus,
-                    tx.amount,
                     max,
                 );
 

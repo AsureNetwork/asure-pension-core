@@ -61,9 +61,9 @@ pub mod calculations {
         return contribution_value;
     }
 
-    pub fn calculate_dpt(contribution_value: f64,
+    pub fn calculate_dpt(amount: f64,
+                         contribution_value: f64,
                          dpt_bonus: f64,
-                         amount: f64,
                          max: f64) -> f64 {
         assert!(dpt_bonus >= 0.0 && dpt_bonus <= 0.5);
         assert!(max >= amount);
@@ -148,8 +148,8 @@ mod tests {
     fn calculate_points_0() {
         let result = calculations::calculate_dpt(
             10.0,
-            0.0,
             10.0,
+            0.0,
             20.0,
         );
         assert_eq!(result, 1.0);
@@ -158,9 +158,9 @@ mod tests {
     #[test]
     fn calculate_dpt_1() {
         let result = calculations::calculate_dpt(
+            20.0,
             10.0,
             0.0,
-            20.0,
             20.0,
         );
         assert_eq!(result, 2.0);
@@ -169,9 +169,9 @@ mod tests {
     #[test]
     fn calculate_dpt_2() {
         let result = calculations::calculate_dpt(
+            1.0,
             10.0,
             0.0,
-            1.0,
             20.0,
         );
         assert_eq!(result, 0.09999999999999999);
@@ -181,8 +181,8 @@ mod tests {
     fn calculate_dpt_3() {
         let result = calculations::calculate_dpt(
             1.0,
-            0.5,
             1.0,
+            0.5,
             1.0,
         );
         assert_eq!(result, 1.5);
@@ -193,16 +193,16 @@ mod tests {
         let mut result = 0.0;
         for _n in 1..100 {
             result += calculations::calculate_dpt(
+                1.0,
                 10.0,
                 0.0,
-                1.0,
                 100.0);
         }
         assert_eq!(result, 9.89999999999998);
         result = calculations::calculate_dpt(
+            100.0,
             10.0,
             0.0,
-            100.0,
             100.0);
         assert_eq!(result, 2.0);
     }
