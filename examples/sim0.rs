@@ -79,8 +79,8 @@ fn print(pension: &Pension) {
     println!("Period: {}, Total Eth: {}, Total Contributor: {}, Total Pensioner: {}",
              pension.current_period, pension.total_eth, contributor_count, pensioner_count);
     for user in &pension.users {
-        println!("User: {}, Wallet: {}, Pension: {}, DPT: {}",
-                 user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount);
+        println!("User: {}, Wallet: {}, Pension: {}, DPT: {} + ({})",
+                 user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount, user.last_dpt);
     }
 
     println!();
