@@ -1,6 +1,6 @@
 pub struct Settings {
     pub period: u64,
-    pub current_avg_points: f64,
+    pub current_dpt_bonus: f64,
     pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,
     pub eth: u128,
@@ -14,7 +14,7 @@ impl Settings {
     pub fn new() -> Settings {
         Settings {
             period: 1,
-            current_avg_points: 0.5,
+            current_dpt_bonus: 0.5,
             current_contribution_value_degree: 10.0,
             current_contribution_value: 1.0,
             eth: 0,
@@ -63,35 +63,35 @@ pub mod calculations {
         return contribution_value;
     }
 
-    pub fn calculate_points(contribution_value: f64,
-                            avg_points: f64,
-                            amount: f64,
-                            max: f64) -> f64 {
-        assert!(avg_points >= 0.0 && avg_points <= 0.5);
+    pub fn calculate_dpt(contribution_value: f64,
+                         dpt_bonus: f64,
+                         amount: f64,
+                         max: f64) -> f64 {
+        assert!(dpt_bonus >= 0.0 && dpt_bonus <= 0.5);
         assert!(max >= amount);
 
         let ccv = contribution_value;
 
         if amount > ccv {
-            return (1.0 + (amount - ccv) / (max - ccv)) + avg_points;
+            return (1.0 + (amount - ccv) / (max - ccv)) + dpt_bonus;
         }
         if amount < ccv {
-            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) + avg_points;
+            return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) + dpt_bonus;
         }
-        //println!("HIER ist {} {}", 1f64 + avg_points, avg_points);
-        1f64 + avg_points //amount == ccv
+        //println!("HIER ist {} {}", 1f64 + dpt_bonus, dpt_bonus);
+        1f64 + dpt_bonus //amount == ccv
     }
 
-    pub fn calculate_avg_points_factor_by_period(index: u64) -> f64 {
+    pub fn calculate_dpt_bonus_by_period(index: u64) -> f64 {
         assert_ne!(index, 0);
         if index >= 40 * 12 {
             return 0.0;
         }
         let year = index % 12;
-        calculate_avg_points_factor(year)
+        calculate_dpt_bonus(year)
     }
 
-    pub fn calculate_avg_points_factor(year: u64) -> f64 {
+    pub fn calculate_dpt_bonus(year: u64) -> f64 {
         assert_ne!(year, 0);
         if year >= 40 {
             return 0.0;
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn calculate_points_0() {
-        let result = calculations::calculate_points(
+        let result = calculations::calculate_dpt(
             10.0,
             0.0,
             10.0,
@@ -159,8 +159,8 @@ mod tests {
     }
 
     #[test]
-    fn calculate_points_1() {
-        let result = calculations::calculate_points(
+    fn calculate_dpt_1() {
+        let result = calculations::calculate_dpt(
             10.0,
             0.0,
             20.0,
@@ -170,8 +170,8 @@ mod tests {
     }
 
     #[test]
-    fn calculate_points_2() {
-        let result = calculations::calculate_points(
+    fn calculate_dpt_2() {
+        let result = calculations::calculate_dpt(
             10.0,
             0.0,
             1.0,
@@ -181,8 +181,8 @@ mod tests {
     }
 
     #[test]
-    fn calculate_points_3() {
-        let result = calculations::calculate_points(
+    fn calculate_dpt_3() {
+        let result = calculations::calculate_dpt(
             1.0,
             0.5,
             1.0,
@@ -192,17 +192,17 @@ mod tests {
     }
 
     #[test]
-    fn calculate_points_in_loop() {
+    fn calculate_dpt_in_loop() {
         let mut result = 0.0;
         for _n in 1..100 {
-            result += calculations::calculate_points(
+            result += calculations::calculate_dpt(
                 10.0,
                 0.0,
                 1.0,
                 100.0);
         }
         assert_eq!(result, 9.89999999999998);
-        result = calculations::calculate_points(
+        result = calculations::calculate_dpt(
             10.0,
             0.0,
             100.0,
@@ -211,23 +211,23 @@ mod tests {
     }
 
     #[test]
-    fn calculate_avg_points_factor() {
-        let mut result = calculations::calculate_avg_points_factor(
+    fn calculate_dpt_bonus() {
+        let mut result = calculations::calculate_dpt_bonus(
             1);
         assert_eq!(result, 0.5);
 
-        result = calculations::calculate_avg_points_factor(
+        result = calculations::calculate_dpt_bonus(
             40);
         assert_eq!(result, 0.0);
     }
 
     #[test]
-    fn calculate_avg_points_factor_by_period() {
-        let mut result = calculations::calculate_avg_points_factor_by_period(
+    fn calculate_dpt_bonus_by_period() {
+        let mut result = calculations::calculate_dpt_bonus_by_period(
             1);
         assert_eq!(result, 0.5);
 
-        result = calculations::calculate_avg_points_factor_by_period(
+        result = calculations::calculate_dpt_bonus_by_period(
             40 * 12);
         assert_eq!(result, 0.0);
     }

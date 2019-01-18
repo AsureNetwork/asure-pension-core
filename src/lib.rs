@@ -67,6 +67,7 @@ impl Pension {
     pub fn start(&mut self) {
         self.current_period += 1;
         self.total_month_eth = 0.0;
+        //self.settings.current_dpt_bonus = self.calculate_dpt_bonus();
     }
 
     pub fn add_amount(&mut self, amount: f64) {
@@ -133,9 +134,9 @@ impl Pension {
     }
 
     pub fn calculate_points(&self, amount: f64, max: f64) -> f64 {
-        let result = calculations::calculate_points(
+        let result = calculations::calculate_dpt(
             self.settings.current_contribution_value,
-            self.settings.current_avg_points,
+            self.settings.current_dpt_bonus,
             amount,
             max,
         );
@@ -176,9 +177,9 @@ impl Pension {
         for user in &mut self.users {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
 //                let amount = (*self).calculate_points(tx.amount, min, max);
-                let amount = calculations::calculate_points(
+                let amount = calculations::calculate_dpt(
                     self.settings.current_contribution_value,
-                    self.settings.current_avg_points,
+                    self.settings.current_dpt_bonus,
                     tx.amount,
                     max,
                 );
@@ -191,13 +192,13 @@ impl Pension {
         }
     }
 
-    pub fn calculate_avg_points(&self) -> f64 {
+    pub fn calculate_dpt_bonus(&self) -> f64 {
         assert_ne!(self.current_period, 0);
         if self.current_period >= 40 * 12 {
             return 0.0;
         }
         let year = self.current_period % 12;
-        calculations::calculate_avg_points_factor(year)
+        calculations::calculate_dpt_bonus(year)
         // as f64;
         //[1,5..1.0] in 40 years
         //1.0+(40+1)^2/40/40*0,5
@@ -230,7 +231,7 @@ mod tests {
     fn calculate_points_should_be_one() {
         let mut pension = Pension::new();
         pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_avg_points = 0.0;
+        pension.settings.current_dpt_bonus = 0.0;
         let result_one = pension.calculate_points(10.0, 100.0);
         assert_eq!(result_one, 1.0);
     }
@@ -239,7 +240,7 @@ mod tests {
     fn calculate_points_should_be_one_point_five() {
         let mut pension = Pension::new();
         pension.settings.current_contribution_value = 10.0;
-        pension.settings.current_avg_points = 0.5;
+        pension.settings.current_dpt_bonus = 0.5;
         let result_one = pension.calculate_points(10.0, 100.0);
         assert_eq!(result_one, 1.5);
     }
@@ -249,12 +250,12 @@ mod tests {
         let mut pension = Pension::new();
 
         pension.current_period = 1;
-        let result_zero_five = pension.calculate_avg_points();
+        let result_zero_five = pension.calculate_dpt_bonus();
         println!("{}", result_zero_five);
         assert_eq!(result_zero_five, 0.5f64);
 
         pension.current_period = 40 * 12;
-        let zero = pension.calculate_avg_points();
+        let zero = pension.calculate_dpt_bonus();
         println!("{}", zero);
         assert_eq!(zero, 0.0f64);
     }
