@@ -5,6 +5,7 @@ use serde_derive::*;
 use crate::user::User;
 use crate::Pension;
 use std::path::Path;
+use crate::user::PensionStatus;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "PascalCase")]
@@ -33,13 +34,22 @@ impl CsvUser {
 pub struct CsvPension {
     period: u64,
     total_eth: f64,
+    total_dpt: f64,
+    total_contributor: usize,
+    total_pensioner: usize,
 }
 
 impl CsvPension {
     pub fn new(pension: &Pension) -> Self {
+        let contributor_count = pension.users.iter().filter(|user| user.pension_status == PensionStatus::Run).count();
+        let pensioner_count = pension.users.iter().filter(|user| user.pension_status == PensionStatus::Retirement).count();
+
         CsvPension {
             period: pension.current_period,
             total_eth: pension.total_eth,
+            total_dpt: pension.total_dpt,
+            total_contributor: contributor_count,
+            total_pensioner: pensioner_count,
         }
     }
 }
