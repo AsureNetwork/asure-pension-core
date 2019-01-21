@@ -31,7 +31,7 @@ fn main() {
         }
         pension.add_amount(amount);
 
-        pension.payout();
+        pension.payout2();
         pension.end();
 
         print(&pension);
@@ -60,7 +60,7 @@ fn main() {
         }
         pension.add_amount(amount);
 
-        pension.payout();
+        pension.payout2();
         pension.end();
 
         print(&pension);
