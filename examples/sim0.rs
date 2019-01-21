@@ -76,8 +76,8 @@ fn print(pension: &Pension) {
     let contributor_count = pension.users.iter().filter(|user| user.pension_status == PensionStatus::Run).count();
     let pensioner_count = pension.users.iter().filter(|user| user.pension_status == PensionStatus::Retirement).count();
 
-    println!("Period: {}, Total Eth: {}, Total Contributor: {}, Total Pensioner: {}",
-             pension.current_period, pension.total_eth, contributor_count, pensioner_count);
+    println!("Period: {}, Total Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}",
+             pension.current_period, pension.total_eth, pension.total_dpt, contributor_count, pensioner_count);
     for user in &pension.users {
         println!("User: {}, Wallet: {}, Pension: {}, DPT: {} + ({})",
                  user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount, user.last_dpt);
