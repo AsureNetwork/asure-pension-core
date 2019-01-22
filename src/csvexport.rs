@@ -15,6 +15,7 @@ pub struct CsvUser {
     wallet: f64,
     pension: f64,
     dpt: f64,
+    last_dpt: f64,
 }
 
 impl CsvUser {
@@ -25,6 +26,7 @@ impl CsvUser {
             wallet: user.wallet.eth,
             pension: user.wallet.pension_eth,
             dpt: user.wallet.dpt.amount,
+            last_dpt: user.last_dpt,
         }
     }
 }
