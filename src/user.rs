@@ -114,7 +114,7 @@ mod tests {
         user.pension_payment_months = 0;
         user.wallet.eth = 100.0;
 
-        user.pay(12, 10.0);
+        user.pay(12, 10.0).unwrap();
 
         assert_eq!(user.transactions.len(), 1);
         assert_eq!(user.wallet.eth, 90.0);
@@ -128,7 +128,7 @@ mod tests {
         user.wallet.eth = 1000.0;
 
         for period in 0..480 {
-            user.pay(period, 1.0);
+            user.pay(period, 1.0).unwrap();
         }
 
         assert_eq!(user.transactions.len(), 480);
