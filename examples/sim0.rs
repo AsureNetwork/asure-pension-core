@@ -1,13 +1,9 @@
 use asure_pension_core::*;
-use asure_pension_core::common::Settings;
 use asure_pension_core::user::{User, PensionStatus};
 use asure_pension_core::csvexport::{PensionCsvExporter};
 
 fn main() {
     println!("Pension Simulation 0");
-
-    let mut settings = Settings::new();
-    settings.eth = 10;
 
     let mut pension = Pension::new();
     let mut pension_exporter = PensionCsvExporter::new();

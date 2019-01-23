@@ -3,7 +3,6 @@ pub struct Settings {
     pub current_dpt_bonus: f64,
     pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,
-    pub eth: u128,
 }
 
 
@@ -16,7 +15,6 @@ impl Settings {
             current_dpt_bonus: 0.5,
             current_contribution_value_degree: 10.0,
             current_contribution_value: 1.0,
-            eth: 0,
         }
     }
 
@@ -231,11 +229,5 @@ mod tests {
         result = calculations::calculate_dpt_bonus_by_period(
             40 * 12);
         assert_eq!(result, 0.0);
-    }
-
-    #[test]
-    fn common_new_works() {
-        let settings = Settings::new();
-        assert_eq!(settings.eth, 0);
     }
 }

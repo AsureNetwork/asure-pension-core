@@ -1,13 +1,8 @@
 //cargo run --example sim1
 use asure_pension_core::*;
-use asure_pension_core::common::Settings;
 
 fn main() {
     println!("Pension Sim1");
-
-    let mut settings = Settings::new();
-    settings.eth = 10;
-
 
     let mut pension = Pension::new();
     pension.create_users(10);
