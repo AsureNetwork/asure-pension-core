@@ -81,7 +81,7 @@ impl Pension {
         self.total_month_eth += amount;
     }
 
-    pub fn payout2(&mut self) {
+    pub fn payout(&mut self) {
         let pensioners = self.users
             .iter()
             .filter(|user| user.pension_status == PensionStatus::Retirement)
@@ -141,37 +141,6 @@ impl Pension {
         }
 
         self.total_eth -= total_eth_month - total_pensions;
-    }
-
-    pub fn payout(&mut self) {
-        let total_retirement_dpt = self.users
-            .iter()
-            .filter(|u| u.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |acc, user| acc + user.wallet.dpt.amount);
-
-        let part = total_retirement_dpt / self.total_dpt;
-        let amount = self.total_dpt * part + self.total_month_eth * (1.0 - part);
-
-        self.total_eth -= self.users
-            .iter_mut()
-            .filter(|u| u.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |total_eth, user| {
-//            if user.pension_received_months < user.pension_receive_months {
-//                user.pension_received_months += 1;
-//            } else {
-//                if user.pension_received_months <= user.pension_receive_months {
-//                    user.activated_dpt = 0.0;
-//                    user.pension_status = PensionStatus::Done
-//                }
-//                return total_eth;
-//            }
-
-                let my_dpt = user.wallet.dpt.amount;
-                let my_part = my_dpt / total_retirement_dpt;
-
-                user.wallet.pension_eth += my_part * amount;
-                return total_eth + my_part * amount;
-            });
     }
 
     pub fn end(&mut self) {
