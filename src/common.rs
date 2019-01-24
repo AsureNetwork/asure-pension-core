@@ -1,28 +1,11 @@
-pub struct Settings {
-    pub period: u64,
-    pub current_dpt_bonus: f64,
-    pub current_contribution_value_degree: f64,
-    pub current_contribution_value: f64,
-}
-
-
-impl Settings {
-    // A public constructor method
-    #[warn(dead_code)]
-    pub fn new() -> Settings {
-        Settings {
-            period: 1,
-            current_dpt_bonus: 0.5,
-            current_contribution_value_degree: 10.0,
-            current_contribution_value: 1.0,
-        }
-    }
-
-    //fn is_odd(n: u32) -> bool {
-    //  n % 2 == 1
-    //}
-}
-
+//macro_rules! log {
+//    ($msg:expr) => {{
+//        let state: i32 = get_log_state();
+//        if state > 0 {
+//            println!("log({}): {}", state, $msg);
+//        }
+//    }};
+//}
 
 pub mod calculations {
     pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
@@ -32,18 +15,17 @@ pub mod calculations {
         sum as f64 / numbers.len() as f64
     }
 
-    pub fn median(numbers: &mut [f64]) -> f64 {
-        //numbers.sort();
-        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let mid = numbers.len() / 2;
-        numbers[mid]
-    }
+//    pub fn median(numbers: &mut [f64]) -> f64 {
+//        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+//        let mid = numbers.len() / 2;
+//        numbers[mid]
+//    }
 
     pub fn calculate_contribution_value(contribution_value: f64,
                                         contribution_value_degree: f64,
                                         numbers: &[f64]) -> f64 {
-        let mut nums = numbers.to_vec();
-        let ref_value = self::median(&mut nums);
+        let nums = numbers.to_vec();
+        let ref_value = self::avg(&nums);
         let ccv = contribution_value;
         let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
@@ -123,13 +105,13 @@ mod tests {
         assert_eq!(result, 2.0);
     }
 
-    #[test]
-    fn median() {
-        let mut numbers = [1.0, 0.1, 5.0];
-        let result = calculations::median(&mut numbers);
-
-        assert_eq!(result, 1.0);
-    }
+//    #[test]
+//    fn median() {
+//        let mut numbers = [1.0, 0.1, 5.0];
+//        let result = calculations::median(&mut numbers);
+//
+//        assert_eq!(result, 1.0);
+//    }
 
     #[test]
     fn calculate_contribution_value() {
