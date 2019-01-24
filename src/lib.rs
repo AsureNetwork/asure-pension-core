@@ -4,22 +4,27 @@ use std::cmp::Ordering::Equal;
 
 use crate::common::*;
 use crate::user::*;
+use crate::settings::*;
 
 //use std::cell::RefCell;
 //use std::rc::Rc;
+//pub mod pension;
 
 pub mod common;
 pub mod csvexport;
-//pub mod pension;
 pub mod transaction;
 pub mod user;
 pub mod wallet;
 pub mod token;
+pub mod settings;
+
+
 //use std::mem;
 //use std::cell::RefCell;
 //use std::iter::FromIterator;
 
 pub struct Pension {
+    pub current_dpt_bonus: f64,
     pub total_eth: f64,
     pub total_month_eth: f64,
     pub total_dpt: f64,
@@ -47,6 +52,7 @@ impl PensionFold {
 impl Pension {
     pub fn new() -> Pension {
         Pension {
+            current_dpt_bonus: 0.5,
             total_eth: 0.0,
             total_month_eth: 0.0,
             total_dpt: 0.0,
@@ -67,7 +73,7 @@ impl Pension {
     pub fn start(&mut self) {
         self.current_period += 1;
         self.total_month_eth = 0.0;
-        self.settings.current_dpt_bonus = calculations::calculate_dpt_bonus_by_period(self.current_period);
+        self.current_dpt_bonus = calculations::calculate_dpt_bonus_by_period(self.current_period);
     }
 
     pub fn add_amount(&mut self, amount: f64) {
@@ -181,7 +187,7 @@ impl Pension {
                 let dpt = calculations::calculate_dpt(
                     tx.amount,
                     self.settings.current_contribution_value,
-                    self.settings.current_dpt_bonus,
+                    self.current_dpt_bonus,
                     max,
                 );
 

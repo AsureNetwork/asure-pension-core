@@ -1,28 +1,11 @@
-pub struct Settings {
-    pub period: u64,
-    pub current_dpt_bonus: f64,
-    pub current_contribution_value_degree: f64,
-    pub current_contribution_value: f64,
-}
-
-
-impl Settings {
-    // A public constructor method
-    #[warn(dead_code)]
-    pub fn new() -> Settings {
-        Settings {
-            period: 1,
-            current_dpt_bonus: 0.5,
-            current_contribution_value_degree: 10.0,
-            current_contribution_value: 1.0,
-        }
-    }
-
-    //fn is_odd(n: u32) -> bool {
-    //  n % 2 == 1
-    //}
-}
-
+//macro_rules! log {
+//    ($msg:expr) => {{
+//        let state: i32 = get_log_state();
+//        if state > 0 {
+//            println!("log({}): {}", state, $msg);
+//        }
+//    }};
+//}
 
 pub mod calculations {
     pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
