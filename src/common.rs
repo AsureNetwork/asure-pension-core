@@ -15,18 +15,17 @@ pub mod calculations {
         sum as f64 / numbers.len() as f64
     }
 
-    pub fn median(numbers: &mut [f64]) -> f64 {
-        //numbers.sort();
-        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        let mid = numbers.len() / 2;
-        numbers[mid]
-    }
+//    pub fn median(numbers: &mut [f64]) -> f64 {
+//        numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+//        let mid = numbers.len() / 2;
+//        numbers[mid]
+//    }
 
     pub fn calculate_contribution_value(contribution_value: f64,
                                         contribution_value_degree: f64,
                                         numbers: &[f64]) -> f64 {
-        let mut nums = numbers.to_vec();
-        let ref_value = self::median(&mut nums);
+        let nums = numbers.to_vec();
+        let ref_value = self::avg(&nums);
         let ccv = contribution_value;
         let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
@@ -106,13 +105,13 @@ mod tests {
         assert_eq!(result, 2.0);
     }
 
-    #[test]
-    fn median() {
-        let mut numbers = [1.0, 0.1, 5.0];
-        let result = calculations::median(&mut numbers);
-
-        assert_eq!(result, 1.0);
-    }
+//    #[test]
+//    fn median() {
+//        let mut numbers = [1.0, 0.1, 5.0];
+//        let result = calculations::median(&mut numbers);
+//
+//        assert_eq!(result, 1.0);
+//    }
 
     #[test]
     fn calculate_contribution_value() {

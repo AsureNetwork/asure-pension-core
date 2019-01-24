@@ -1,6 +1,7 @@
 pub struct Settings {
     pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,
+    pub years: u64,
 }
 
 
@@ -11,6 +12,7 @@ impl Settings {
         Settings {
             current_contribution_value_degree: 10.0,
             current_contribution_value: 1.0,
+            years: 40,
         }
     }
 
