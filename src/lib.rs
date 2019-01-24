@@ -88,10 +88,6 @@ impl Pension {
             .map(|user| user.wallet.dpt.amount)
             .collect::<Vec<_>>();
 
-        if pensioners.is_empty() {
-            return ();
-        }
-
         let period = self.current_period;
         let contributions = self.users
             .iter()
@@ -104,13 +100,17 @@ impl Pension {
         let total_eth_month: f64 = contributions.iter().sum();
         let avg_eth_month = total_eth_month / contributions.len() as f64;
 
+        if pensioners.is_empty() {
+            return ();
+        }
+
         let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
         let mut weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * (1.0 / avg_eth_month));
         if weighted_dpt_eth_rate > avg_eth_month {
             weighted_dpt_eth_rate = avg_eth_month;
         }
 
-        let total_pensions = self.users
+        let mut total_pensions = self.users
             .iter_mut()
             .filter(|user| user.pension_status == PensionStatus::Retirement)
             .fold(0.0, |total_pensions, user| {
@@ -120,7 +120,26 @@ impl Pension {
                 return total_pensions + pension;
             });
 
-        assert!(total_eth_month - total_pensions >= 0.0);
+        if self.total_eth > 0.0 && weighted_dpt_eth_rate < avg_eth_month {
+            let total_dpt: f64 = self.users
+                .iter()
+                .filter(|user| user.pension_status != PensionStatus::Done)
+                .map(|user| user.wallet.dpt.amount)
+                .sum();
+
+            let total_dpt_eth_rate = self.total_eth / (total_dpt * 480.0);
+
+            total_pensions = self.users
+                .iter_mut()
+                .filter(|user| user.pension_status == PensionStatus::Retirement)
+                .fold(total_pensions, |total_dpt_eth_allowed, user| {
+                    let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
+                    user.wallet.pension_eth += dpt_eth_allowed;
+
+                    return total_dpt_eth_allowed + dpt_eth_allowed;
+                });
+        }
+
         self.total_eth -= total_eth_month - total_pensions;
     }
 
