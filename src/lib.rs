@@ -39,8 +39,8 @@ pub struct Pension {
 pub trait PensionSimulation {
     fn name(&mut self) -> String;
     fn create_user(&mut self, current_period: u64) -> u32;
-    fn should_user_retire(&mut self, user: &User) -> bool;
-    fn pay_pension(&mut self, user: &User) -> f64;
+    fn should_retire(&mut self, contributor: &User) -> bool;
+    fn pay_pension(&mut self, contributor: &User) -> Option<f64>;
 }
 
 struct PensionFold {
@@ -84,28 +84,28 @@ impl Pension {
 
             let mut contributors = pension.users
                 .iter_mut()
-                .filter(|user| user.pension_status == PensionStatus::Run)
+                .filter(|contributor| contributor.pension_status == PensionStatus::Run)
                 .collect::<Vec<_>>();
 
             contributors
                 .iter_mut()
-                .filter(|user| simulation.should_user_retire(user))
-                .for_each(|user| {
-                    user.activate_retirement();
+                .filter(|contributor| simulation.should_retire(contributor))
+                .for_each(|contributor| {
+                    contributor.activate_retirement();
                 });
 
 
             let contributor_payments = contributors
                 .iter()
-                .map(|user| simulation.pay_pension(user))
+                .filter_map(|contributor| simulation.pay_pension(contributor))
                 .collect::<Vec<_>>();
 
             let current_period = pension.current_period;
             let total_payments = contributors
                 .iter_mut()
                 .zip(contributor_payments)
-                .fold(0.0, |total_payments, (user, payment)| {
-                    match user.pay(current_period, payment) {
+                .fold(0.0, |total_payments, (contributor, payment)| {
+                    match contributor.pay(current_period, payment) {
                         Ok(()) => total_payments + payment,
                         Err(_) => total_payments
                     }

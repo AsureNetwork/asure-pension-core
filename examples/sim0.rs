@@ -22,12 +22,12 @@ impl PensionSimulation for Simulation0 {
         }
     }
 
-    fn should_user_retire(&mut self, user: &User) -> bool {
-        user.transactions.len() == 480
+    fn should_retire(&mut self, contributor: &User) -> bool {
+        contributor.transactions.len() == 480
     }
 
-    fn pay_pension(&mut self, _user: &User) -> f64 {
-        1.0
+    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
+        Some(1.0)
     }
 }
 
