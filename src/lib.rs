@@ -220,7 +220,20 @@ impl Pension {
                 .map(|user| user.wallet.dpt.amount)
                 .sum();
 
-            let total_dpt_eth_rate = self.total_eth / (total_dpt * 480.0);
+            let open_months: f64 = self.users
+                .iter()
+                .map(|user| {
+                    match user.pension_status {
+                        PensionStatus::Run => 480.0,
+                        PensionStatus::Retirement => user.allowed_pension_receive_months() as f64 - user.pension_receive_months as f64,
+                        PensionStatus::Done => 0.0
+                    }
+                })
+                .sum();
+            let avg_open_months = open_months / self.users.len() as f64;
+//            let avg_open_months = 480.0;
+
+            let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
 
             total_pensions = self.users
                 .iter_mut()
