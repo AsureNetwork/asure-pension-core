@@ -5,6 +5,7 @@ use std::cmp::Ordering::Equal;
 use crate::common::*;
 use crate::user::*;
 use crate::settings::*;
+use crate::csvexport::PensionCsvExporter;
 
 //use std::cell::RefCell;
 //use std::rc::Rc;
@@ -35,6 +36,13 @@ pub struct Pension {
     pub settings: Settings,
 }
 
+pub trait PensionSimulation {
+    fn name(&mut self) -> String;
+    fn create_user(&mut self, current_period: u64) -> u32;
+    fn should_user_retire(&mut self, user: &User) -> bool;
+    fn pay_pension(&mut self, user: &User) -> f64;
+}
+
 struct PensionFold {
     total_eth: f64,
     total_month_eth: f64,
@@ -62,6 +70,80 @@ impl Pension {
             current_period: 0,
             settings: Settings::new(),
         }
+    }
+
+    pub fn simulate<T>(mut simulation: T) where T: PensionSimulation {
+        println!("Pension {}", simulation.name());
+
+        let mut pension = Pension::new();
+        let mut pension_exporter = PensionCsvExporter::new();
+
+        loop {
+            pension.start();
+            pension.create_users(simulation.create_user(pension.current_period));
+
+            let mut contributors = pension.users
+                .iter_mut()
+                .filter(|user| user.pension_status == PensionStatus::Run)
+                .collect::<Vec<_>>();
+
+            contributors
+                .iter_mut()
+                .filter(|user| simulation.should_user_retire(user))
+                .for_each(|user| {
+                    user.activate_retirement();
+                });
+
+
+            let contributor_payments = contributors
+                .iter()
+                .map(|user| simulation.pay_pension(user))
+                .collect::<Vec<_>>();
+
+            let current_period = pension.current_period;
+            let total_payments = contributors
+                .iter_mut()
+                .zip(contributor_payments)
+                .fold(0.0, |total_payments, (user, payment)| {
+                    match user.pay(current_period, payment) {
+                        Ok(()) => total_payments + payment,
+                        Err(_) => total_payments
+                    }
+                });
+
+            pension.add_amount(total_payments);
+
+            pension.payout();
+            pension.end();
+            pension.print();
+
+            pension_exporter.add_pension(&pension);
+            pension_exporter.add_users(&pension);
+
+            // TODO: pension.users.iter().all(|user| user.pension_status == PensionStatus::Done)
+            if pension.current_period == 480 * 2 {
+                break;
+            }
+        }
+
+        pension_exporter.export_pensions("sim0-pensions.csv");
+        pension_exporter.export_users("sim0-users.csv");
+    }
+
+    pub fn print(&self) {
+        let contributor_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Run).count();
+        let pensioner_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Retirement).count();
+
+        println!("Period: {}, Total Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}",
+                 self.current_period, self.total_eth, self.total_dpt, contributor_count, pensioner_count);
+        for user in &self.users {
+            println!("User: {}, Wallet: {}, Pension: {}, DPT: {} + ({})",
+                     user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount, user.last_dpt);
+        }
+
+        println!();
+        println!("-------------------------");
+        println!();
     }
 
     pub fn create_users(&mut self, count: u32) {
@@ -186,7 +268,6 @@ impl Pension {
             }
         }
     }
-
 }
 
 #[cfg(test)]

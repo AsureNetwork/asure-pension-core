@@ -53,7 +53,7 @@ impl User {
         true
     }
 
-    pub fn pay(&mut self, period: u64, amount: f64) -> Result<(), String> {
+    pub fn pay(&mut self, period: u64, payment: f64) -> Result<(), String> {
         if self.pension_status == PensionStatus::Retirement {
             return Err(String::from("Already retired"));
         }
@@ -62,7 +62,7 @@ impl User {
             return Err(format!("Already payed {} month", self.pension_payment_months));
         }
 
-        let tx = Transaction::new(period, amount);
+        let tx = Transaction::new(period, payment);
         self.wallet.eth -= tx.amount;
         self.pension_payment_months += 1;
         self.transactions.push(tx);
