@@ -126,8 +126,8 @@ impl Pension {
             }
         }
 
-        pension_exporter.export_pensions("sim0-pensions.csv");
-        pension_exporter.export_users("sim0-users.csv");
+        pension_exporter.export_pensions(format!("{}-pensions.csv", simulation.name().to_lowercase()));
+        pension_exporter.export_users(format!("{}-users.csv", simulation.name().to_lowercase()));
     }
 
     pub fn print(&self) {
