@@ -235,7 +235,7 @@ impl Pension {
                 });
         }
 
-        self.total_eth += total_eth_month - total_pensions;
+        self.total_eth = self.total_eth - total_pensions;
     }
 
     pub fn end(&mut self) {
