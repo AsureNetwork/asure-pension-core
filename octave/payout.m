@@ -39,6 +39,13 @@ function [savings_eth, pensions] = payout (savings_eth, contributors, pensioners
   # in the system
   if columns (pensioners) == 0
     savings_eth = savings_eth + total_eth_month
+    pensions = []
+    return;
+  endif
+
+  # redistribute contributions of current month if available
+  if (total_eth_month == 0)
+    pensions = zeros(size (pensioners))
   else
     # calc the weighted dpt factor
     total_weighted_dpt = sum (pensioners / 480)
@@ -52,17 +59,16 @@ function [savings_eth, pensions] = payout (savings_eth, contributors, pensioners
     endif
 
     pensions = (pensioners / 480) * weighted_dpt_eth_rate
-
-    # add more eth in case we have savings
-    if savings_eth > 0 && weighted_dpt_eth_rate < avg_eth_month
-      total_dpt = sum (contributors_dpt) + sum (pensioners)
-      total_dpt_eth_rate = savings_eth / (total_dpt * 480) # should last for 40 years
-
-      #total_dpt_eth_missing = avg_eth_month - pensions
-      total_dpt_eth_allowed = total_dpt_eth_rate * pensioners
-      pensions = pensions + total_dpt_eth_allowed
-    endif
-
-    savings_eth = savings_eth + total_eth_month - sum (pensions)
   endif
+
+  # add more eth in case we have savings and we have not payed the average yet
+  if savings_eth > 0 && (total_eth_month == 0 || weighted_dpt_eth_rate < avg_eth_month)
+    total_dpt = sum (contributors_dpt) + sum (pensioners)
+    total_dpt_eth_rate = savings_eth / (total_dpt * 480) # should last for 40 years
+
+    total_dpt_eth_allowed = total_dpt_eth_rate * pensioners
+    pensions = pensions + total_dpt_eth_allowed
+  endif
+
+  savings_eth = savings_eth + total_eth_month - sum (pensions)
 endfunction
