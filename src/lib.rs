@@ -115,13 +115,17 @@ impl Pension {
 
             pension.payout();
             pension.end();
-            pension.print();
 
+            pension.users
+                .iter_mut()
+                .filter(|user| user.is_pension_payment_complete())
+                .for_each(|user| user.pension_status = PensionStatus::Done);
+
+            pension.print();
             pension_exporter.add_pension(&pension);
             pension_exporter.add_users(&pension);
 
-            // TODO: pension.users.iter().all(|user| user.pension_status == PensionStatus::Done)
-            if pension.current_period == 480 * 2 {
+            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done) {
                 break;
             }
         }
@@ -133,12 +137,15 @@ impl Pension {
     pub fn print(&self) {
         let contributor_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Run).count();
         let pensioner_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Retirement).count();
+        let done_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Done).count();
+        let total_pension_eth: f64 = self.users.iter().map(|user| user.wallet.pension_eth).sum();
 
-        println!("Period: {}, Total Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}",
-                 self.current_period, self.total_eth, self.total_dpt, contributor_count, pensioner_count);
+        println!("Period: {}, Total Eth: {}, Total Pension Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
+                 self.current_period, self.total_eth, total_pension_eth, self.total_dpt, contributor_count, pensioner_count, done_count);
         for user in &self.users {
-            println!("User: {}, Wallet: {}, Pension: {}, DPT: {} + ({})",
-                     user.id, user.wallet.eth, user.wallet.pension_eth, user.wallet.dpt.amount, user.last_dpt);
+            println!("User: {}, Status: {:?}, Wallet: {}, Pension: {}, Pension Months Allowed: {}, Pensions Months Received: {}, DPT: {} + ({})",
+                     user.id, user.pension_status, user.wallet.eth, user.wallet.pension_eth, user.allowed_pension_receive_months(),
+                     user.pension_receive_months, user.wallet.dpt.amount, user.last_dpt);
         }
 
         println!();
@@ -186,23 +193,27 @@ impl Pension {
             return ();
         }
 
-        let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
-        let mut weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * (1.0 / avg_eth_month));
-        if weighted_dpt_eth_rate > avg_eth_month {
-            weighted_dpt_eth_rate = avg_eth_month;
+        let mut total_pensions = 0.0;
+        let mut weighted_dpt_eth_rate = 0.0;
+        if total_eth_month > 0.0 {
+            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
+            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * (1.0 / avg_eth_month));
+            if weighted_dpt_eth_rate > avg_eth_month {
+                weighted_dpt_eth_rate = avg_eth_month;
+            }
+
+            total_pensions = self.users
+                .iter_mut()
+                .filter(|user| user.pension_status == PensionStatus::Retirement)
+                .fold(total_pensions, |total_pensions, user| {
+                    let pension = (user.wallet.dpt.amount / 480.0) * weighted_dpt_eth_rate;
+                    user.wallet.pension_eth += pension;
+
+                    return total_pensions + pension;
+                });
         }
 
-        let mut total_pensions = self.users
-            .iter_mut()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |total_pensions, user| {
-                let pension = (user.wallet.dpt.amount / 480.0) * weighted_dpt_eth_rate;
-                user.wallet.pension_eth += pension;
-
-                return total_pensions + pension;
-            });
-
-        if self.total_eth > 0.0 && weighted_dpt_eth_rate < avg_eth_month {
+        if self.total_eth > 0.0 && (total_eth_month == 0.0 || weighted_dpt_eth_rate < avg_eth_month) {
             let total_dpt: f64 = self.users
                 .iter()
                 .filter(|user| user.pension_status != PensionStatus::Done)
@@ -216,13 +227,15 @@ impl Pension {
                 .filter(|user| user.pension_status == PensionStatus::Retirement)
                 .fold(total_pensions, |total_dpt_eth_allowed, user| {
                     let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
-                    user.wallet.pension_eth += dpt_eth_allowed;
 
-                    return total_dpt_eth_allowed + dpt_eth_allowed;
+                    match user.payout(dpt_eth_allowed) {
+                        Ok(()) => total_dpt_eth_allowed + dpt_eth_allowed,
+                        Err(err) => panic!(err),
+                    }
                 });
         }
 
-        self.total_eth -= total_eth_month - total_pensions;
+        self.total_eth += total_eth_month - total_pensions;
     }
 
     pub fn end(&mut self) {
