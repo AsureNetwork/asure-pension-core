@@ -196,8 +196,8 @@ impl Pension {
         let mut total_pensions = 0.0;
         let mut weighted_dpt_eth_rate = 0.0;
         if total_eth_month > 0.0 {
-            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
-            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * avg_eth_month);
+            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>(); // / 480.0
+            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * avg_eth_month); //* 480.0
             if weighted_dpt_eth_rate > avg_eth_month {
                 weighted_dpt_eth_rate = avg_eth_month;
             }
@@ -206,7 +206,7 @@ impl Pension {
                 .iter_mut()
                 .filter(|user| user.pension_status == PensionStatus::Retirement)
                 .fold(total_pensions, |total_pensions, user| {
-                    let pension = (user.wallet.dpt.amount * weighted_dpt_eth_rate) / 480.0;
+                    let pension = user.wallet.dpt.amount * weighted_dpt_eth_rate; // / 480.0
                     user.wallet.pension_eth += pension;
 
                     return total_pensions + pension;
