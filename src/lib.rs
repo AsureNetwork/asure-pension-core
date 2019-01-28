@@ -197,7 +197,7 @@ impl Pension {
         let mut weighted_dpt_eth_rate = 0.0;
         if total_eth_month > 0.0 {
             let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>(); // / 480.0
-            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * avg_eth_month); //* 480.0
+            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt / avg_eth_month); //* 480.0
             if weighted_dpt_eth_rate > avg_eth_month {
                 weighted_dpt_eth_rate = avg_eth_month;
             }
@@ -214,9 +214,13 @@ impl Pension {
         }
 
         if self.total_eth > 0.0 && (total_eth_month == 0.0 || weighted_dpt_eth_rate < avg_eth_month) {
-            let total_dpt: f64 = self.users
+            let active_users = self.users
                 .iter()
                 .filter(|user| user.pension_status != PensionStatus::Done)
+                .collect::<Vec<_>>();
+
+            let total_dpt: f64 = active_users
+                .iter()
                 .map(|user| user.wallet.dpt.amount)
                 .sum();
 
@@ -230,7 +234,7 @@ impl Pension {
                     }
                 })
                 .sum();
-            let avg_open_months = open_months / self.users.len() as f64;
+            let avg_open_months = open_months / active_users.len() as f64;
 //            let avg_open_months = 480.0;
 
             let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
