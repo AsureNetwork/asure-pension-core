@@ -2,17 +2,17 @@
 use asure_pension_core::*;
 use asure_pension_core::user::User;
 
-struct Simulation1;
+struct Sim;
 
-impl Simulation1 {
+impl Sim {
     pub fn new() -> Self {
-        Simulation1 {}
+        Sim {}
     }
 }
 
-impl PensionSimulation for Simulation1 {
+impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Simulation1".to_string()
+        "Sim 1".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
@@ -32,5 +32,5 @@ impl PensionSimulation for Simulation1 {
 }
 
 fn main() {
-    Pension::simulate(Simulation1::new());
+    Pension::simulate(Sim::new());
 }

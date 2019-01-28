@@ -125,7 +125,7 @@ impl Pension {
             pension_exporter.add_pension(&pension);
             pension_exporter.add_users(&pension);
 
-            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done) {
+            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done || pension.current_period >= 480 * 4) {
                 break;
             }
         }
