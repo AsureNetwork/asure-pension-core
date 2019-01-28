@@ -125,7 +125,7 @@ impl Pension {
             pension_exporter.add_pension(&pension);
             pension_exporter.add_users(&pension);
 
-            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done || pension.current_period >= 480 * 4) {
+            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done) {
                 break;
             }
         }
@@ -252,6 +252,7 @@ impl Pension {
                 });
         }
 
+        assert!(self.total_eth - total_pensions >= 0.0);
         self.total_eth = self.total_eth - total_pensions;
     }
 
