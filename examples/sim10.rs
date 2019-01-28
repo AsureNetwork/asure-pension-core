@@ -1,4 +1,3 @@
-//cargo run --example sim1
 use asure_pension_core::*;
 use asure_pension_core::user::User;
 
@@ -12,12 +11,13 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 1".to_string()
+        "Sim 10".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
         match current_period {
             1 => 10,
+            481 => 10,
             _ => 0,
         }
     }

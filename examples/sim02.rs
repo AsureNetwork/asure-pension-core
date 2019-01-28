@@ -12,7 +12,7 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 3".to_string()
+        "Sim 02".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
@@ -28,7 +28,7 @@ impl PensionSimulation for Sim {
 
     fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
         match _contributor.id {
-            0 => Some(0.1),
+            0 => Some(2.0),
             _ => Some(1.0),
         }
     }
