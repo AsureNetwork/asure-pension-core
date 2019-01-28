@@ -252,7 +252,7 @@ impl Pension {
                 });
         }
 
-        assert!(self.total_eth - total_pensions > 0.0);
+        assert!(self.total_eth - total_pensions >= 0.0);
         self.total_eth = self.total_eth - total_pensions;
     }
 
