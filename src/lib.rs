@@ -197,7 +197,7 @@ impl Pension {
         let mut weighted_dpt_eth_rate = 0.0;
         if total_eth_month > 0.0 {
             let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>(); // / 480.0
-            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt / avg_eth_month); //* 480.0
+            weighted_dpt_eth_rate = (total_eth_month * avg_eth_month) / total_weighted_dpt;
             if weighted_dpt_eth_rate > avg_eth_month {
                 weighted_dpt_eth_rate = avg_eth_month;
             }
