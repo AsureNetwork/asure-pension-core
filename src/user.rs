@@ -48,6 +48,7 @@ impl User {
 
     pub fn activate_retirement(&mut self) -> bool {
         self.pension_status = PensionStatus::Retirement;
+        self.last_dpt = 0.0;
         true
     }
 
