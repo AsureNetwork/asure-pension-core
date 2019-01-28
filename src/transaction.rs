@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Transaction {
     pub period: u64,
     pub amount: f64,

@@ -4,6 +4,7 @@ use crate::wallet::*;
 
 static USER_COUNTER: AtomicUsize = atomic::ATOMIC_USIZE_INIT;
 
+#[derive(Debug)]
 pub struct User {
     pub id: usize,
     pub name: String,

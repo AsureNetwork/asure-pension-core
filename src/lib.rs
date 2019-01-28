@@ -23,7 +23,7 @@ pub mod settings;
 //use std::mem;
 //use std::cell::RefCell;
 //use std::iter::FromIterator;
-
+#[derive(Debug)]
 pub struct Pension {
     pub current_dpt_bonus: f64,
     pub total_eth: f64,
@@ -129,6 +129,8 @@ impl Pension {
                 break;
             }
         }
+
+        println!("{:?}", pension);
 
         pension_exporter.export_pensions(format!("{}-pensions.csv", simulation.name().to_lowercase()));
         pension_exporter.export_users(format!("{}-users.csv", simulation.name().to_lowercase()));
