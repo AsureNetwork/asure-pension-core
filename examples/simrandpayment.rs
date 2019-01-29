@@ -24,7 +24,7 @@ impl PensionSimulation for SimulationRandomPayment {
     fn create_user(&mut self, current_period: u64) -> u32 {
         match current_period {
             1 => 10,
-            481 => 10,
+            481 => 5,
             _ => 0,
         }
     }

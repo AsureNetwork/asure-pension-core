@@ -193,24 +193,27 @@ impl Pension {
             return ();
         }
 
-        let mut total_pensions = 0.0;
         let mut weighted_dpt_eth_rate = 0.0;
         if total_eth_month > 0.0 {
-            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>(); // / 480.0
-            weighted_dpt_eth_rate = (total_eth_month * avg_eth_month) / total_weighted_dpt;
+            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
+            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt / avg_eth_month);
             if weighted_dpt_eth_rate > avg_eth_month {
                 weighted_dpt_eth_rate = avg_eth_month;
             }
 
-            total_pensions = self.users
+            let pensions_from_month = self.users
                 .iter_mut()
                 .filter(|user| user.pension_status == PensionStatus::Retirement)
-                .fold(total_pensions, |total_pensions, user| {
-                    let pension = user.wallet.dpt.amount * weighted_dpt_eth_rate; // / 480.0
+                .fold(0.0, |acc, user| {
+                    let pension = user.wallet.dpt.amount / 480.0 * weighted_dpt_eth_rate; // / 480.0
                     user.wallet.pension_eth += pension;
 
-                    return total_pensions + pension;
+                    return acc + pension;
                 });
+
+            self.total_eth -= pensions_from_month;
+            assert!(self.total_eth >= 0.0);
+//            assert_eq!(pensions_from_month, total_eth_month, "{} = {}", pensions_from_month, total_eth_month);
         }
 
         if self.total_eth > 0.0 && (total_eth_month == 0.0 || weighted_dpt_eth_rate < avg_eth_month) {
@@ -239,21 +242,20 @@ impl Pension {
 
             let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
 
-            total_pensions = self.users
+            let pensions_from_savings = self.users
                 .iter_mut()
                 .filter(|user| user.pension_status == PensionStatus::Retirement)
-                .fold(total_pensions, |total_dpt_eth_allowed, user| {
+                .fold(0.0, |acc, user| {
                     let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
 
                     match user.payout(dpt_eth_allowed) {
-                        Ok(()) => total_dpt_eth_allowed + dpt_eth_allowed,
+                        Ok(()) => acc + dpt_eth_allowed,
                         Err(err) => panic!(err),
                     }
                 });
+            self.total_eth -= pensions_from_savings;
+            assert!(self.total_eth >= 0.0)
         }
-
-        assert!(self.total_eth - total_pensions >= 0.0);
-        self.total_eth = self.total_eth - total_pensions;
     }
 
     pub fn end(&mut self) {
