@@ -26,11 +26,18 @@ endfunction
 #         1 1 1 1 1 1 1 1 1 1;
 #         100 100 100 100 100 100 100 100 100 100
 #       ]
-#   p = [480 480 480 480 480 480 480 480 480 480]
+#   p = [
+#         480 480 480 480 480 480 480 480 480 480;
+#         0 0 0 0 0 0 0 0 0 0
+#       ]
 #   payout(s, c, p)
 function [savings_eth, pensions] = payout (savings_eth, contributors, pensioners)
   contributors_eth = contributors(1,:)
   contributors_dpt = contributors(2,:)
+  
+  pensioners_dpt = pensioners(1,:)
+  pensioners_months_received = pensioners(2,:)
+  
 
   total_eth_month = sum (contributors_eth)
   avg_eth_month = mean (contributors_eth)
@@ -45,10 +52,10 @@ function [savings_eth, pensions] = payout (savings_eth, contributors, pensioners
 
   # redistribute contributions of current month if available
   if (total_eth_month == 0)
-    pensions = zeros(size (pensioners))
+    pensions = zeros(size (pensioners_dpt))
   else
     # calc the weighted dpt factor
-    total_weighted_dpt = sum (pensioners / 480)
+    total_weighted_dpt = sum (pensioners_dpt / 480)
 
     # max. eth we could give out for each dpt using contributions of current month
     weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt * (1 / avg_eth_month))
@@ -58,15 +65,21 @@ function [savings_eth, pensions] = payout (savings_eth, contributors, pensioners
       weighted_dpt_eth_rate = avg_eth_month
     endif
 
-    pensions = (pensioners / 480) * weighted_dpt_eth_rate
+    pensions = (pensioners_dpt / 480) * weighted_dpt_eth_rate
   endif
 
   # add more eth in case we have savings and we have not payed the average yet
   if savings_eth > 0 && (total_eth_month == 0 || weighted_dpt_eth_rate < avg_eth_month)
-    total_dpt = sum (contributors_dpt) + sum (pensioners)
-    total_dpt_eth_rate = savings_eth / (total_dpt * 480) # should last for 40 years
+    total_dpt = sum (contributors_dpt) + sum (pensioners_dpt)
+    
+    open_months = 480 * columns(contributors) + sum (480 - pensioners_months_received)
+    active_users = columns(contributors) + columns(pensioners)
+    avg_open_months = open_months / active_users
+    # avg_open_months = 480 # should last for 40 years
+    
+    total_dpt_eth_rate = savings_eth / (total_dpt * avg_open_months) 
 
-    total_dpt_eth_allowed = total_dpt_eth_rate * pensioners
+    total_dpt_eth_allowed = total_dpt_eth_rate * pensioners_dpt
     pensions = pensions + total_dpt_eth_allowed
   endif
 
