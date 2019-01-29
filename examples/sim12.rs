@@ -1,4 +1,3 @@
-//cargo run --example sim2
 #![feature(exclusive_range_pattern)]
 
 use asure_pension_core::*;
@@ -14,12 +13,13 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 04".to_string()
+        "Sim 12".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
         match current_period {
             1 => 10,
+            481 => 10,
             _ => 0,
         }
     }
@@ -28,12 +28,10 @@ impl PensionSimulation for Sim {
         contributor.transactions.len() == 480
     }
 
-    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
-        match _contributor.pension_payment_months {
-            0..60 => Some(1.0),
-            60..240 => Some(0.5),
-            240..360 => Some(0.25),
-            360..480 => Some(0.1),
+    fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
+        match contributor.id {
+            0..10 => Some(1.0),
+            10..19 => Some(0.1),
             _ => Some(0.0),
         }
     }
