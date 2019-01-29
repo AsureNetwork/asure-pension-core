@@ -18,7 +18,7 @@ impl PensionSimulation for Sim {
         if current_period == 1 {
             return 10;
         }
-        if current_period > 480 * 8 {
+        if current_period > 480 {
             return 0;
         }
         match current_period % (15 + 1) {
