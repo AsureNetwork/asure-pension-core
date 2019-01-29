@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Settings {
     pub current_contribution_value_degree: f64,
     pub current_contribution_value: f64,

@@ -1,5 +1,6 @@
 use crate::token::Token;
 
+#[derive(Debug)]
 pub struct Wallet {
     pub dpt: Token,
     pub eth: f64,

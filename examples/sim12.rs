@@ -1,3 +1,5 @@
+#![feature(exclusive_range_pattern)]
+
 use asure_pension_core::*;
 use asure_pension_core::user::User;
 
@@ -11,18 +13,13 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 11".to_string()
+        "Sim 12".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
-        if current_period == 1 {
-            return 10;
-        }
-        if current_period > 480 * 8 {
-            return 0;
-        }
-        match current_period % (15 + 1) {
-            0 => 10,
+        match current_period {
+            1 => 10,
+            481 => 10,
             _ => 0,
         }
     }
@@ -31,8 +28,12 @@ impl PensionSimulation for Sim {
         contributor.transactions.len() == 480
     }
 
-    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
-        Some(1.0)
+    fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
+        match contributor.id {
+            0..10 => Some(1.0),
+            10..19 => Some(0.1),
+            _ => Some(0.0),
+        }
     }
 }
 
