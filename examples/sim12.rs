@@ -31,7 +31,7 @@ impl PensionSimulation for Sim {
     fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
         match contributor.id {
             0..10 => Some(1.0),
-            10..19 => Some(0.1),
+            10..20 => Some(0.1),
             _ => Some(0.0),
         }
     }

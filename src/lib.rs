@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 
+
 use std::cmp::Ordering::Equal;
 
 use crate::common::*;
-use crate::user::*;
-use crate::settings::*;
 use crate::csvexport::PensionCsvExporter;
+use crate::settings::*;
+use crate::user::*;
 
 //use std::cell::RefCell;
 //use std::rc::Rc;
@@ -18,6 +19,7 @@ pub mod user;
 pub mod wallet;
 pub mod token;
 pub mod settings;
+
 
 
 //use std::mem;
@@ -203,11 +205,13 @@ impl Pension {
                 weighted_dpt_eth_rate = avg_eth_month;
             }
 
+            weighted_dpt_eth_rate = weighted_dpt_eth_rate * 480.0; //).floor();
+
             let pensions_from_month = self.users
                 .iter_mut()
                 .filter(|user| user.pension_status == PensionStatus::Retirement)
                 .fold(0.0, |acc, user| {
-                    let pension = user.wallet.dpt.amount / 480.0 * weighted_dpt_eth_rate; // / 480.0
+                    let pension = user.wallet.dpt.amount / weighted_dpt_eth_rate; // / 480.0
                     user.wallet.pension_eth += pension;
 
                     return acc + pension;
@@ -255,8 +259,8 @@ impl Pension {
                         Err(err) => panic!(err),
                     }
                 });
+            assert!(self.total_eth - pensions_from_savings >= 0.0, "self.total_eth: {} ; pensions_from_savings: {} = {}", self.total_eth, pensions_from_savings, self.total_eth - pensions_from_savings);
             self.total_eth -= pensions_from_savings;
-            assert!(self.total_eth >= 0.0)
         }
     }
 
