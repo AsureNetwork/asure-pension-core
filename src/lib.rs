@@ -246,7 +246,6 @@ impl Pension {
 
         self.total_eth -= pensions_from_savings;
         assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
-        ()
     }
 
     fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
