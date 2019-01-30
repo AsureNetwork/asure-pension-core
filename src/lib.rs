@@ -188,7 +188,7 @@ impl Pension {
         let mut monthly_dpt_unit_rate = 0.0;
         if contributions_month_total > 0.0 {
             monthly_dpt_unit_rate = self.calculate_monthly_dpt_unit_rate();
-            self.payout_monthly_contributions(monthly_dpt_unit_rate);
+            self.payout_monthly_contributions(480.0 * monthly_dpt_unit_rate);
         }
 
         // Payout parts of the saved all_eth_month of previous month to all pensioners
@@ -217,32 +217,19 @@ impl Pension {
             .sum()
     }
 
-    fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
-        let contributions_month = self.contributions_of_current_period();
-        let contributions_month_total: f64 = contributions_month.iter().sum();
-        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
-
-        let total_weighted_dpt: f64 = self.pension_dpt_total() / 480.0;
-
-        let weighted_dpt_eth_rate =
-            (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
-
-        contributions_month_avg.min(weighted_dpt_eth_rate)
-    }
-
     fn payout_monthly_contributions(&mut self, monthly_dpt_unit_rate: f64) {
         let pensions_from_month = self.users
             .iter_mut()
             .filter(|user| user.pension_status == PensionStatus::Retirement)
             .fold(0.0, |acc, user| {
-                let amount_eth = user.wallet.dpt.amount / 480.0 * monthly_dpt_unit_rate; // / 480.0
-                user.wallet.pension_eth += amount_eth;
+                let amount_unit = user.wallet.dpt.amount / monthly_dpt_unit_rate; // / 480.0
+                user.wallet.pension_eth += amount_unit;
 
-                return acc + amount_eth;
+                return acc + amount_unit;
             });
 
         self.total_eth -= pensions_from_month;
-        assert!(self.total_eth >= 0.0);
+        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
     }
 
     fn payout_saved_contributions(&mut self, savings_dpt_unit_rate: f64) {
@@ -261,6 +248,19 @@ impl Pension {
         self.total_eth -= pensions_from_savings;
         assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
         ()
+    }
+
+    fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
+        let contributions_month = self.contributions_of_current_period();
+        let contributions_month_total: f64 = contributions_month.iter().sum();
+        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
+
+        let total_weighted_dpt: f64 = self.pension_dpt_total() / 480.0;
+
+        let monthly_dpt_unit_rate =
+            (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
+
+        contributions_month_avg.min(monthly_dpt_unit_rate)
     }
 
     fn calculate_savings_dpt_unit_rate(&self) -> f64 {
