@@ -21,7 +21,6 @@ pub mod token;
 pub mod settings;
 
 
-
 //use std::mem;
 //use std::cell::RefCell;
 //use std::iter::FromIterator;
@@ -175,93 +174,120 @@ impl Pension {
     }
 
     pub fn payout(&mut self) {
-        let pensioners = self.users
-            .iter()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .map(|user| user.wallet.dpt.amount)
-            .collect::<Vec<_>>();
+        // If there are no pensioners in the current month, we don't have to
+        // payout anything and return early.
+        if self.pension_dpt_total() == 0.0 {
+            return ();
+        }
 
+        let contributions_month = self.contributions_of_current_period();
+        let contributions_month_total: f64 = contributions_month.iter().sum();
+        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
+
+        // Payout all_eth_month of the current month to all pensioners
+        let mut weighted_dpt_eth_rate = 0.0;
+        if contributions_month_total > 0.0 {
+            weighted_dpt_eth_rate = self.calc_weighted_dpt_eth_rate();
+            self.payout_monthly_contributions(weighted_dpt_eth_rate);
+        }
+
+        // Payout parts of the saved all_eth_month of previous month to all pensioners
+        if self.total_eth > 0.0 && (contributions_month_total == 0.0 || weighted_dpt_eth_rate < contributions_month_avg) {
+            self.payout_saved_contributions();
+        }
+    }
+
+    fn contributions_of_current_period(&self) -> Vec<f64> {
         let period = self.current_period;
-        let contributions = self.users
+        self.users
             .iter()
             .filter(|user| user.pension_status == PensionStatus::Run)
             .flat_map(|user| &user.transactions)
             .filter(|tx| tx.period == period)
             .map(|tx| tx.amount)
+            .collect::<Vec<_>>()
+    }
+
+    fn pension_dpt_total(&self) -> f64 {
+        self.users
+            .iter()
+            .filter(|user| user.pension_status == PensionStatus::Retirement)
+            .map(|user| user.wallet.dpt.amount)
+            .sum()
+    }
+
+    fn calc_weighted_dpt_eth_rate(&mut self) -> f64 {
+        let contributions_month = self.contributions_of_current_period();
+        let contributions_month_total: f64 = contributions_month.iter().sum();
+        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
+
+        let total_weighted_dpt: f64 = self.pension_dpt_total() / 480.0;
+
+        let mut weighted_dpt_eth_rate = (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
+        if weighted_dpt_eth_rate > contributions_month_avg {
+            weighted_dpt_eth_rate = contributions_month_avg;
+        }
+
+        weighted_dpt_eth_rate
+    }
+
+    fn payout_monthly_contributions(&mut self, weighted_dpt_eth_rate: f64) {
+        let pensions_from_month = self.users
+            .iter_mut()
+            .filter(|user| user.pension_status == PensionStatus::Retirement)
+            .fold(0.0, |acc, user| {
+                let pension = user.wallet.dpt.amount / 480.0 * weighted_dpt_eth_rate; // / 480.0
+                user.wallet.pension_eth += pension;
+
+                return acc + pension;
+            });
+
+        self.total_eth -= pensions_from_month;
+        assert!(self.total_eth >= 0.0);
+    }
+
+    fn payout_saved_contributions(&mut self) {
+        let active_users = self.users
+            .iter()
+            .filter(|user| user.pension_status != PensionStatus::Done)
             .collect::<Vec<_>>();
 
-        let total_eth_month: f64 = contributions.iter().sum();
-        let avg_eth_month = total_eth_month / contributions.len() as f64;
+        let total_dpt: f64 = active_users
+            .iter()
+            .map(|user| user.wallet.dpt.amount)
+            .sum();
 
-        if pensioners.is_empty() {
-            return ();
-        }
+        let open_months: f64 = self.users
+            .iter()
+            .map(|user| {
+                match user.pension_status {
+                    PensionStatus::Run => 480.0,
+                    PensionStatus::Retirement => user.allowed_pension_receive_months() as f64 - user.pension_receive_months as f64,
+                    PensionStatus::Done => 0.0
+                }
+            })
+            .sum();
 
-        let mut weighted_dpt_eth_rate = 0.0;
-        if total_eth_month > 0.0 {
-            let total_weighted_dpt: f64 = pensioners.iter().sum::<f64>() / 480.0;
-            weighted_dpt_eth_rate = total_eth_month / (total_weighted_dpt / avg_eth_month);
-            if weighted_dpt_eth_rate > avg_eth_month {
-                weighted_dpt_eth_rate = avg_eth_month;
-            }
-
-            weighted_dpt_eth_rate = weighted_dpt_eth_rate * 480.0; //).floor();
-
-            let pensions_from_month = self.users
-                .iter_mut()
-                .filter(|user| user.pension_status == PensionStatus::Retirement)
-                .fold(0.0, |acc, user| {
-                    let pension = user.wallet.dpt.amount / weighted_dpt_eth_rate; // / 480.0
-                    user.wallet.pension_eth += pension;
-
-                    return acc + pension;
-                });
-
-            self.total_eth -= pensions_from_month;
-            assert!(self.total_eth >= 0.0);
-//            assert_eq!(pensions_from_month, total_eth_month, "{} = {}", pensions_from_month, total_eth_month);
-        }
-
-        if self.total_eth > 0.0 && (total_eth_month == 0.0 || weighted_dpt_eth_rate < avg_eth_month) {
-            let active_users = self.users
-                .iter()
-                .filter(|user| user.pension_status != PensionStatus::Done)
-                .collect::<Vec<_>>();
-
-            let total_dpt: f64 = active_users
-                .iter()
-                .map(|user| user.wallet.dpt.amount)
-                .sum();
-
-            let open_months: f64 = self.users
-                .iter()
-                .map(|user| {
-                    match user.pension_status {
-                        PensionStatus::Run => 480.0,
-                        PensionStatus::Retirement => user.allowed_pension_receive_months() as f64 - user.pension_receive_months as f64,
-                        PensionStatus::Done => 0.0
-                    }
-                })
-                .sum();
-            let avg_open_months = open_months / active_users.len() as f64;
+        let avg_open_months = open_months / active_users.len() as f64;
 //            let avg_open_months = 480.0;
 
-            let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
+        let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
 
-            let pensions_from_savings = self.users
-                .iter_mut()
-                .filter(|user| user.pension_status == PensionStatus::Retirement)
-                .fold(0.0, |acc, user| {
-                    let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
+        let pensions_from_savings = self.users
+            .iter_mut()
+            .filter(|user| user.pension_status == PensionStatus::Retirement)
+            .fold(0.0, |acc, user| {
+                let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
 
-                    match user.payout(dpt_eth_allowed) {
-                        Ok(()) => acc + dpt_eth_allowed,
-                        Err(err) => panic!(err),
-                    }
-                });
-            assert!(self.total_eth - pensions_from_savings >= 0.0, "self.total_eth: {} ; pensions_from_savings: {} = {}", self.total_eth, pensions_from_savings, self.total_eth - pensions_from_savings);
-            self.total_eth -= pensions_from_savings;
-        }
+                match user.payout(dpt_eth_allowed) {
+                    Ok(()) => acc + dpt_eth_allowed,
+                    Err(err) => panic!(err),
+                }
+            });
+
+        self.total_eth -= pensions_from_savings;
+        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
+        ()
     }
 
     pub fn end(&mut self) {
