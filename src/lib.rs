@@ -223,12 +223,11 @@ impl Pension {
 
         let total_weighted_dpt: f64 = self.pension_dpt_total() / 480.0;
 
-        let mut weighted_dpt_eth_rate = (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
-        if weighted_dpt_eth_rate > contributions_month_avg {
-            weighted_dpt_eth_rate = contributions_month_avg;
-        }
+        let weighted_dpt_eth_rate =
+            (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
 
-        weighted_dpt_eth_rate
+        contributions_month_avg.min(weighted_dpt_eth_rate)
+
     }
 
     fn payout_monthly_contributions(&mut self, weighted_dpt_eth_rate: f64) {
