@@ -7,9 +7,6 @@
 //    }};
 //}
 
-
-use crate::user::*;
-
 pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
 
 pub fn avg(numbers: &[f64]) -> f64 {
@@ -97,20 +94,30 @@ pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_
     (contributions_month_avg / 480.0).min(monthly_dpt_unit_rate)
 }
 
-pub fn calculate_savings_dpt_unit_rate(active_users: &[&User], total_open_months: f64, total_eth: f64) -> f64 {
-    let total_active_dpt: f64 = active_users
-        .iter()
-        .map(|user| user.wallet.dpt.amount)
-        .sum();
+pub fn calculate_savings_dpt_unit_rate(active_users_dpt: &[f64], total_open_months: f64, total_eth: f64) -> f64 {
+    let active_users_total_dpt: f64 = active_users_dpt.iter().sum();
 
-    let avg_open_months = total_open_months / active_users.len() as f64;
+    let avg_open_months = total_open_months / active_users_dpt.len() as f64;
 
-    total_eth / (total_active_dpt * avg_open_months)
+    total_eth / (active_users_total_dpt * avg_open_months)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_calculate_savings_dpt_unit_rate() {
+        let users_dpt = [480.0, 480.0, 480.0, 480.0, 480.0,
+            480.0, 480.0, 480.0, 480.0, 480.0];
+        let total_open_months = 480.0 * 10.0;
+        let total_eth = 480.0 * 10.0;
+
+        let result = calculate_savings_dpt_unit_rate(&users_dpt,
+                                                     total_open_months,
+                                                     total_eth);
+        assert_eq!(result, 1.0 / 480.0);
+    }
 
     #[test]
     fn test_calculate_monthly_dpt_unit_rate() {

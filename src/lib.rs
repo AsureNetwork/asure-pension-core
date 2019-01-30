@@ -257,13 +257,14 @@ impl Pension {
     }
 
     fn calculate_savings_dpt_unit_rate(&self) -> f64 {
-        let active_users = self.users
+        let total_open_months = self.total_open_months();
+        let active_users_dpt = self.users
             .iter()
             .filter(|user| user.pension_status != PensionStatus::Done)
+            .map(|user| user.wallet.dpt.amount)
             .collect::<Vec<_>>();
-        let total_open_months = self.total_open_months();
 
-        calculations::calculate_savings_dpt_unit_rate(&active_users, total_open_months, self.total_eth)
+        calculations::calculate_savings_dpt_unit_rate(&active_users_dpt, total_open_months, self.total_eth)
     }
 
     fn total_open_months(&self) -> f64 {
