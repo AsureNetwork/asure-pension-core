@@ -185,15 +185,16 @@ impl Pension {
         let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
 
         // Payout all_eth_month of the current month to all pensioners
-        let mut weighted_dpt_eth_rate = 0.0;
+        let mut monthly_dpt_unit_rate = 0.0;
         if contributions_month_total > 0.0 {
-            weighted_dpt_eth_rate = self.calc_weighted_dpt_eth_rate();
-            self.payout_monthly_contributions(weighted_dpt_eth_rate);
+            monthly_dpt_unit_rate = self.calculate_monthly_dpt_unit_rate();
+            self.payout_monthly_contributions(monthly_dpt_unit_rate);
         }
 
         // Payout parts of the saved all_eth_month of previous month to all pensioners
-        if self.total_eth > 0.0 && (contributions_month_total == 0.0 || weighted_dpt_eth_rate < contributions_month_avg) {
-            self.payout_saved_contributions();
+        if self.total_eth > 0.0 && (contributions_month_total == 0.0 || monthly_dpt_unit_rate < contributions_month_avg) {
+            let savings_dpt_unit_rate = self.calculate_savings_dpt_unit_rate();
+            self.payout_saved_contributions(savings_dpt_unit_rate);
         }
     }
 
@@ -216,7 +217,7 @@ impl Pension {
             .sum()
     }
 
-    fn calc_weighted_dpt_eth_rate(&mut self) -> f64 {
+    fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
         let contributions_month = self.contributions_of_current_period();
         let contributions_month_total: f64 = contributions_month.iter().sum();
         let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
@@ -227,36 +228,60 @@ impl Pension {
             (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
 
         contributions_month_avg.min(weighted_dpt_eth_rate)
-
     }
 
-    fn payout_monthly_contributions(&mut self, weighted_dpt_eth_rate: f64) {
+    fn payout_monthly_contributions(&mut self, monthly_dpt_unit_rate: f64) {
         let pensions_from_month = self.users
             .iter_mut()
             .filter(|user| user.pension_status == PensionStatus::Retirement)
             .fold(0.0, |acc, user| {
-                let pension = user.wallet.dpt.amount / 480.0 * weighted_dpt_eth_rate; // / 480.0
-                user.wallet.pension_eth += pension;
+                let amount_eth = user.wallet.dpt.amount / 480.0 * monthly_dpt_unit_rate; // / 480.0
+                user.wallet.pension_eth += amount_eth;
 
-                return acc + pension;
+                return acc + amount_eth;
             });
 
         self.total_eth -= pensions_from_month;
         assert!(self.total_eth >= 0.0);
     }
 
-    fn payout_saved_contributions(&mut self) {
+    fn payout_saved_contributions(&mut self, savings_dpt_unit_rate: f64) {
+        let pensions_from_savings = self.users
+            .iter_mut()
+            .filter(|user| user.pension_status == PensionStatus::Retirement)
+            .fold(0.0, |acc, user| {
+                let amount_unit = user.wallet.dpt.amount * savings_dpt_unit_rate;
+
+                match user.payout(amount_unit) {
+                    Ok(()) => acc + amount_unit,
+                    Err(err) => panic!(err),
+                }
+            });
+
+        self.total_eth -= pensions_from_savings;
+        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
+        ()
+    }
+
+    fn calculate_savings_dpt_unit_rate(&self) -> f64 {
         let active_users = self.users
             .iter()
             .filter(|user| user.pension_status != PensionStatus::Done)
             .collect::<Vec<_>>();
 
-        let total_dpt: f64 = active_users
+        let total_active_dpt: f64 = active_users
             .iter()
             .map(|user| user.wallet.dpt.amount)
             .sum();
 
-        let open_months: f64 = self.users
+        let total_open_months = self.total_open_months();
+        let avg_open_months = total_open_months / active_users.len() as f64;
+
+        self.total_eth / (total_active_dpt * avg_open_months)
+    }
+
+    fn total_open_months(&self) -> f64 {
+        self.users
             .iter()
             .map(|user| {
                 match user.pension_status {
@@ -265,28 +290,7 @@ impl Pension {
                     PensionStatus::Done => 0.0
                 }
             })
-            .sum();
-
-        let avg_open_months = open_months / active_users.len() as f64;
-//            let avg_open_months = 480.0;
-
-        let total_dpt_eth_rate = self.total_eth / (total_dpt * avg_open_months);
-
-        let pensions_from_savings = self.users
-            .iter_mut()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |acc, user| {
-                let dpt_eth_allowed = user.wallet.dpt.amount * total_dpt_eth_rate;
-
-                match user.payout(dpt_eth_allowed) {
-                    Ok(()) => acc + dpt_eth_allowed,
-                    Err(err) => panic!(err),
-                }
-            });
-
-        self.total_eth -= pensions_from_savings;
-        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
-        ()
+            .sum()
     }
 
     pub fn end(&mut self) {
