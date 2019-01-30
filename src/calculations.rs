@@ -87,15 +87,14 @@ pub fn calculate_dpt_bonus(year: u64) -> f64 {
 }
 
 pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_total: f64) -> f64 {
+    assert!(pension_dpt_total > 0.0, "pension dpt total must be greater than zero");
     let contributions_month_total: f64 = contributions_month.iter().sum();
     let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
 
-    let total_weighted_dpt: f64 = pension_dpt_total / 480.0;
-
     let monthly_dpt_unit_rate =
-        (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
+        contributions_month_total / (pension_dpt_total * contributions_month_avg);
 
-    contributions_month_avg.min(monthly_dpt_unit_rate)
+    (contributions_month_avg / 480.0).min(monthly_dpt_unit_rate)
 }
 
 pub fn calculate_savings_dpt_unit_rate(active_users: &[&User], total_open_months: f64, total_eth: f64) -> f64 {
@@ -112,6 +111,42 @@ pub fn calculate_savings_dpt_unit_rate(active_users: &[&User], total_open_months
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_calculate_monthly_dpt_unit_rate() {
+        let contributions_month = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        let pension_dpt_total = 480.0 * 10.0;
+
+        let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
+
+        assert_eq!(result, 1.0 / 480.0);
+    }
+
+    #[test]
+    fn test_calculate_monthly_dpt_unit_rate_by_twenty() {
+        let contributions_month = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        let pension_dpt_total = 480.0 * 20.0;
+
+        let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
+
+        assert_eq!(result, 1.0 / 960.0);
+    }
+
+    #[test]
+    fn test_calculate_monthly_dpt_unit_rate_by_five() {
+        let contributions_month = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        let pension_dpt_total = 480.0 * 5.0;
+
+        let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
+
+        assert_eq!(result, 1.0 / 480.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_calculate_monthly_dpt_unit_rate_by_zero() {
+        calculate_monthly_dpt_unit_rate(&[], 0.0);
+    }
 
     #[test]
     fn diff() {

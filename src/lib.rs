@@ -187,7 +187,7 @@ impl Pension {
         let mut monthly_dpt_unit_rate = 0.0;
         if contributions_month_total > 0.0 {
             monthly_dpt_unit_rate = self.calculate_monthly_dpt_unit_rate();
-            self.payout_monthly_contributions(480.0 * monthly_dpt_unit_rate);
+            self.payout_monthly_contributions(monthly_dpt_unit_rate);
         }
 
         // Payout parts of the saved all_eth_month of previous month to all pensioners
@@ -221,7 +221,7 @@ impl Pension {
             .iter_mut()
             .filter(|user| user.pension_status == PensionStatus::Retirement)
             .fold(0.0, |acc, user| {
-                let amount_unit = user.wallet.dpt.amount / monthly_dpt_unit_rate; // / 480.0
+                let amount_unit = user.wallet.dpt.amount * monthly_dpt_unit_rate; // / 480.0
                 user.wallet.pension_eth += amount_unit;
 
                 return acc + amount_unit;
