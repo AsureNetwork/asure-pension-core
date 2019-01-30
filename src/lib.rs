@@ -3,7 +3,6 @@
 
 use std::cmp::Ordering::Equal;
 
-use crate::common::*;
 use crate::csvexport::PensionCsvExporter;
 use crate::settings::*;
 use crate::user::*;
@@ -12,7 +11,7 @@ use crate::user::*;
 //use std::rc::Rc;
 //pub mod pension;
 
-pub mod common;
+pub mod calculations;
 pub mod csvexport;
 pub mod transaction;
 pub mod user;
@@ -252,15 +251,9 @@ impl Pension {
 
     fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
         let contributions_month = self.contributions_of_current_period();
-        let contributions_month_total: f64 = contributions_month.iter().sum();
-        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
+        let pension_dpt_total = self.pension_dpt_total();
 
-        let total_weighted_dpt: f64 = self.pension_dpt_total() / 480.0;
-
-        let monthly_dpt_unit_rate =
-            (contributions_month_total * contributions_month_avg) / total_weighted_dpt;
-
-        contributions_month_avg.min(monthly_dpt_unit_rate)
+        calculations::calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total)
     }
 
     fn calculate_savings_dpt_unit_rate(&self) -> f64 {
@@ -268,16 +261,9 @@ impl Pension {
             .iter()
             .filter(|user| user.pension_status != PensionStatus::Done)
             .collect::<Vec<_>>();
-
-        let total_active_dpt: f64 = active_users
-            .iter()
-            .map(|user| user.wallet.dpt.amount)
-            .sum();
-
         let total_open_months = self.total_open_months();
-        let avg_open_months = total_open_months / active_users.len() as f64;
 
-        self.total_eth / (total_active_dpt * avg_open_months)
+        calculations::calculate_savings_dpt_unit_rate(&active_users, total_open_months, self.total_eth)
     }
 
     fn total_open_months(&self) -> f64 {
