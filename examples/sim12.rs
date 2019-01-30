@@ -1,5 +1,4 @@
-#![feature(exclusive_range_pattern)]
-
+//#![feature(exclusive_range_pattern)]
 use asure_pension_core::*;
 use asure_pension_core::user::User;
 
@@ -30,8 +29,8 @@ impl PensionSimulation for Sim {
 
     fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
         match contributor.id {
-            0..10 => Some(1.0),
-            10..20 => Some(0.5),
+            0...9 => Some(1.0),
+            10...20 => Some(0.5),
             _ => Some(0.0),
         }
     }
