@@ -80,13 +80,15 @@ impl Pension {
 
         loop {
             pension.start();
+
+            // 1. Create new contributors
             pension.create_users(simulation.create_user(pension.current_period));
 
+            // 2. Retire all selected contributors so they become pensioners
             let mut contributors = pension.users
                 .iter_mut()
                 .filter(|contributor| contributor.pension_status == PensionStatus::Run)
                 .collect::<Vec<_>>();
-
             contributors
                 .iter_mut()
                 .filter(|contributor| simulation.should_retire(contributor))
@@ -94,12 +96,11 @@ impl Pension {
                     contributor.activate_retirement();
                 });
 
-
+            // 3. Let all selected contributors pay into the pension system
             let contributor_payments = contributors
                 .iter()
                 .filter_map(|contributor| simulation.pay_pension(contributor))
                 .collect::<Vec<_>>();
-
             let current_period = pension.current_period;
             let total_payments = contributors
                 .iter_mut()
@@ -110,21 +111,29 @@ impl Pension {
                         Err(_) => total_payments
                     }
                 });
-
             pension.add_amount(total_payments);
 
+            // 4. Payout pensions to all selected pensioners
             pension.payout();
+
+            // 5. Calculate and distribute DPT based on their contribution
+            //    of the current period
+            // TODO: Logically I think this should happen as step 4 and the name of
+            //       the method should reflect what it does.
             pension.end();
 
+            // 6. Remove all pensioners from the system who got their complete pension
             pension.users
                 .iter_mut()
                 .filter(|user| user.is_pension_payment_complete())
                 .for_each(|user| user.pension_status = PensionStatus::Done);
 
+            // 7. Log state after period is done
             pension.print();
             pension_exporter.add_pension(&pension);
             pension_exporter.add_users(&pension);
 
+            // 8. Repeat until all users retired and got their complete pension
             if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done) {
                 break;
             }
