@@ -4,7 +4,7 @@
 use std::cmp::Ordering::Equal;
 
 use crate::csvexport::PensionCsvExporter;
-use crate::settings::*;
+//use crate::settings::*;
 use crate::user::*;
 
 //use std::cell::RefCell;
@@ -26,14 +26,14 @@ pub mod settings;
 #[derive(Debug)]
 pub struct Pension {
     pub current_dpt_bonus: f64,
+    pub ccv: f64,
     pub total_eth: f64,
     pub total_month_eth: f64,
     pub total_dpt: f64,
     pub total_month_dpt: f64,
     pub total_retirement_dpt: f64,
     pub users: Vec<User>,
-    pub current_period: u64,
-    pub settings: Settings,
+    pub current_period: u64
 }
 
 pub trait PensionSimulation {
@@ -61,14 +61,14 @@ impl Pension {
     pub fn new() -> Pension {
         Pension {
             current_dpt_bonus: 0.5,
+            ccv: 1.0,
             total_eth: 0.0,
             total_month_eth: 0.0,
             total_dpt: 0.0,
             total_month_dpt: 0.0,
             total_retirement_dpt: 0.0,
             users: Vec::new(),
-            current_period: 0,
-            settings: Settings::new(),
+            current_period: 0
         }
     }
 
@@ -302,9 +302,8 @@ impl Pension {
             return;
         }
 
-        self.settings.current_contribution_value = calculations::calculate_contribution_value(
-            self.settings.current_contribution_value,
-            self.settings.current_contribution_value_degree,
+        self.ccv = calculations::calculate_contribution_value(
+            self.ccv,
             &period_amounts,
         );
 
@@ -319,7 +318,7 @@ impl Pension {
             if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
                 let dpt = calculations::calculate_dpt(
                     tx.amount,
-                    self.settings.current_contribution_value,
+                    self.ccv,
                     self.current_dpt_bonus,
                     max,
                 );

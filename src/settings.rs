@@ -1,8 +1,8 @@
 #[derive(Debug)]
 pub struct Settings {
-    pub current_contribution_value_degree: f64,
-    pub current_contribution_value: f64,
-    pub years: u64,
+    pub ccv_degree: f64,
+    pub years: u32,
+    pub min_positive: f64,
 }
 
 
@@ -11,9 +11,9 @@ impl Settings {
     #[warn(dead_code)]
     pub fn new() -> Settings {
         Settings {
-            current_contribution_value_degree: 10.0,
-            current_contribution_value: 1.0,
+            ccv_degree: 10.0,
             years: 40,
+            min_positive: 0.0000000000000001
         }
     }
 

@@ -7,6 +7,8 @@
 //    }};
 //}
 
+use crate::settings::*;
+
 
 pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
 
@@ -22,8 +24,10 @@ pub fn avg(numbers: &[f64]) -> f64 {
 //    }
 
 pub fn calculate_contribution_value(contribution_value: f64,
-                                    contribution_value_degree: f64,
                                     numbers: &[f64]) -> f64 {
+    let settings = Settings::new();
+    let contribution_value_degree = settings.ccv_degree;
+
     let nums = numbers.to_vec();
     let ref_value = self::avg(&nums);
     let ccv = contribution_value;
@@ -200,13 +204,10 @@ mod tests {
     #[test]
     fn test_calculate_contribution_value() {
         let mut numbers = [1.0, 1.0, 1.0];
-
         let contribution_value = 1.0;
-        let contribution_value_degree = 10.0;
 
         let result = calculate_contribution_value(
             contribution_value,
-            contribution_value_degree,
             &mut numbers);
 
         assert_eq!(result, 1.0);
