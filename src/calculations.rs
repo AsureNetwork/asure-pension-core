@@ -7,9 +7,6 @@
 //    }};
 //}
 
-use crate::settings::*;
-
-
 pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
 
 pub fn avg(numbers: &[f64]) -> f64 {
@@ -24,10 +21,8 @@ pub fn avg(numbers: &[f64]) -> f64 {
 //    }
 
 pub fn calculate_contribution_value(contribution_value: f64,
+                                    contribution_value_degree: f64,
                                     numbers: &[f64]) -> f64 {
-    let settings = Settings::new();
-    let contribution_value_degree = settings.ccv_degree;
-
     let nums = numbers.to_vec();
     let ref_value = self::avg(&nums);
     let ccv = contribution_value;
@@ -89,6 +84,7 @@ pub fn calculate_dpt_bonus(year: u64) -> f64 {
 }
 
 pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_total: f64) -> f64 {
+    assert!(contributions_month.len() > 0, "contributions_month must be greater than zero");
     assert!(pension_dpt_total > 0.0, "pension dpt total must be greater than zero");
     let contributions_month_total: f64 = contributions_month.iter().sum();
     let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
@@ -100,6 +96,9 @@ pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_
 }
 
 pub fn calculate_savings_dpt_unit_rate(active_users_dpt: &[f64], total_open_months: f64, total_eth: f64) -> f64 {
+    assert!(active_users_dpt.len() > 0, "active_users_dpt must be greater than zero");
+    assert!(total_open_months > 0.0, "total_open_months must be greater than zero");
+
     let active_users_total_dpt: f64 = active_users_dpt.iter().sum();
 
     let avg_open_months = total_open_months / active_users_dpt.len() as f64;
@@ -127,6 +126,7 @@ impl Floor for f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::settings::*;
 
     #[test]
     fn test_calculate_savings_dpt_unit_rate() {
@@ -206,8 +206,12 @@ mod tests {
         let mut numbers = [1.0, 1.0, 1.0];
         let contribution_value = 1.0;
 
+        let settings = Settings::new();
+        let contribution_value_degree = settings.ccv_degree;
+
         let result = calculate_contribution_value(
             contribution_value,
+            contribution_value_degree,
             &mut numbers);
 
         assert_eq!(result, 1.0);

@@ -6,6 +6,7 @@ use std::cmp::Ordering::Equal;
 use crate::csvexport::PensionCsvExporter;
 //use crate::settings::*;
 use crate::user::*;
+use crate::settings::Settings;
 
 //use std::cell::RefCell;
 //use std::rc::Rc;
@@ -18,6 +19,7 @@ pub mod user;
 pub mod wallet;
 pub mod token;
 pub mod settings;
+pub mod new;
 
 
 //use std::mem;
@@ -302,8 +304,12 @@ impl Pension {
             return;
         }
 
+        let settings = Settings::new();
+        let contribution_value_degree = settings.ccv_degree;
+
         self.ccv = calculations::calculate_contribution_value(
             self.ccv,
+            contribution_value_degree,
             &period_amounts,
         );
 
