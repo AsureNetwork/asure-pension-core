@@ -58,7 +58,7 @@ pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimu
 
         // 8. Repeat until all users retired and got their complete pension
         // TODO: Implement PartialEq?
-        if users.iter_mut().all(|user| {
+        if users.iter().all(|user| {
             match user.to_done_user() {
                 Some(_) => true,
                 None => false
@@ -131,7 +131,7 @@ fn claim_pensions<T>(simulation: &mut T, pension: &mut Pension, users: &mut Vec<
     let period = pension.period;
 
     users.iter_mut()
-        .filter_map(|user| user.to_pensioner())
+        .filter_map(|user| user.to_pensioner_mut())
         .filter(|pensioner| simulation.should_claim_pension(pensioner, period))
         .for_each(|pensioner| {
             match pension.claim_pension(pensioner) {
