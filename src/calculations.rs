@@ -7,6 +7,7 @@
 //    }};
 //}
 
+
 pub const MIN_POSITIVE: f64 = 0.0000000000000001;//std::f64::MIN_POSITIVE
 
 pub fn avg(numbers: &[f64]) -> f64 {
@@ -91,7 +92,7 @@ pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_
     let monthly_dpt_unit_rate =
         contributions_month_total / (pension_dpt_total * contributions_month_avg);
 
-    (contributions_month_avg / 480.0).min(monthly_dpt_unit_rate)
+    floor((contributions_month_avg / 480.0).min(monthly_dpt_unit_rate))
 }
 
 pub fn calculate_savings_dpt_unit_rate(active_users_dpt: &[f64], total_open_months: f64, total_eth: f64) -> f64 {
@@ -99,8 +100,25 @@ pub fn calculate_savings_dpt_unit_rate(active_users_dpt: &[f64], total_open_mont
 
     let avg_open_months = total_open_months / active_users_dpt.len() as f64;
 
-    total_eth / (active_users_total_dpt * avg_open_months)
+    floor(total_eth / (active_users_total_dpt * avg_open_months))
 }
+
+
+pub fn floor(number: f64) -> f64 {
+    number.floor_factor(16)
+}
+
+pub trait Floor {
+    fn floor_factor(&self, number: u32) -> f64;
+}
+
+impl Floor for f64 {
+    fn floor_factor(&self, number: u32) -> f64 {
+        let factor = (10_u64).pow(number) as f64;
+        ((*self) * factor).floor() / factor
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -116,7 +134,7 @@ mod tests {
         let result = calculate_savings_dpt_unit_rate(&users_dpt,
                                                      total_open_months,
                                                      total_eth);
-        assert_eq!(result, 1.0 / 480.0);
+        assert_eq!(result, floor(1.0 / 480.0));
     }
 
     #[test]
@@ -126,7 +144,7 @@ mod tests {
 
         let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
 
-        assert_eq!(result, 1.0 / 480.0);
+        assert_eq!(result, floor(1.0 / 480.0));
     }
 
     #[test]
@@ -136,7 +154,7 @@ mod tests {
 
         let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
 
-        assert_eq!(result, 1.0 / 960.0);
+        assert_eq!(result, floor(1.0 / 960.0));
     }
 
     #[test]
@@ -146,7 +164,7 @@ mod tests {
 
         let result = calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total);
 
-        assert_eq!(result, 1.0 / 480.0);
+        assert_eq!(result, floor(1.0 / 480.0));
     }
 
     #[test]
