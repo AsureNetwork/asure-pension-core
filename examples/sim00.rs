@@ -1,4 +1,4 @@
-//cargo run --example sim1
+//cargo run --example sim00
 use asure_pension_core::new::*;
 
 struct Sim;
@@ -10,14 +10,8 @@ impl Sim {
 }
 
 impl PensionSimulation for Sim {
-    fn name(&mut self) -> String {
-        "Sim 00".to_string()
-    }
 }
 
 fn main() {
-    match simulate(Sim::new()) {
-        Err(error) => panic!(error),
-        _ => ()
-    }
+    simulate(Sim::new()).unwrap();
 }
