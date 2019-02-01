@@ -46,6 +46,10 @@ pub struct Pension {
     pub(super) period: Period,
     period_states: HashMap<Period, PeriodState>,
 
+    contributors_total: u64,
+    pensioners_total: u64,
+    done_users_total: u64,
+
     pub(super) contributions_total: Unit,
     pub(super) pensions_total: Unit,
     periods_open: Period,
@@ -60,6 +64,10 @@ impl Pension {
         Pension {
             period: 0,
             period_states: HashMap::new(),
+
+            contributors_total: 0,
+            pensioners_total: 0,
+            done_users_total: 0,
 
             contributions_total: 0.0,
             pensions_total: 0.0,
@@ -81,6 +89,7 @@ impl Pension {
     }
 
     pub fn join(&mut self, _contributor: &Contributor) {
+        self.contributors_total += 1;
         self.periods_open += 480;
     }
 
@@ -99,7 +108,8 @@ impl Pension {
 
     pub fn retire(&mut self, contributor: Contributor) -> User {
         self.dpt_pensioner += contributor.dpts.values().map(|dpt| dpt).sum::<Dpt>();
-
+        self.contributors_total -= 1;
+        self.pensioners_total += 1;
         contributor.retire()
     }
 
@@ -108,7 +118,9 @@ impl Pension {
 
         match &user {
             User::Done(done_user) => {
-                self.dpt_done = done_user.pensioner.contributor.dpt_total();
+                self.dpt_done += done_user.pensioner.contributor.dpt_total();
+                self.pensioners_total -= 1;
+                self.done_users_total += 1;
             }
             _ => ()
         }
@@ -243,7 +255,8 @@ impl Pension {
             return ();
         }
 
-        let active_users_dpt = vec![self.dpt_total - self.dpt_done];
+        let active_users_count = self.contributors_total + self.pensioners_total;
+        let active_users_dpt = self.dpt_total - self.dpt_done;
         let total_open_months = self.periods_open as f64;
 
         let savings_dpt_unit_rate = if total_open_months <= 0.0 {
@@ -252,7 +265,7 @@ impl Pension {
             Some(Err("no contributions in period".to_string()))
         } else {
             Some(Ok(calculate_savings_dpt_unit_rate(
-                &active_users_dpt, total_open_months, self.contributions_total,
+                active_users_count, active_users_dpt, total_open_months, self.contributions_total,
             )))
         };
 

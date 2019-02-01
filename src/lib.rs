@@ -35,7 +35,7 @@ pub struct Pension {
     pub total_month_dpt: f64,
     pub total_retirement_dpt: f64,
     pub users: Vec<User>,
-    pub current_period: u64
+    pub current_period: u64,
 }
 
 pub trait PensionSimulation {
@@ -70,7 +70,7 @@ impl Pension {
             total_month_dpt: 0.0,
             total_retirement_dpt: 0.0,
             users: Vec::new(),
-            current_period: 0
+            current_period: 0,
         }
     }
 
@@ -274,7 +274,11 @@ impl Pension {
             .map(|user| user.wallet.dpt.amount)
             .collect::<Vec<_>>();
 
-        calculations::calculate_savings_dpt_unit_rate(&active_users_dpt, total_open_months, self.total_eth)
+        let active_users_dpt_total = active_users_dpt.iter().sum();
+
+        calculations::calculate_savings_dpt_unit_rate(
+            active_users_dpt.len() as u64, active_users_dpt_total, total_open_months, self.total_eth,
+        )
     }
 
     fn total_open_months(&self) -> f64 {

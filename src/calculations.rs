@@ -95,15 +95,14 @@ pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_
     floor((contributions_month_avg / 480.0).min(monthly_dpt_unit_rate))
 }
 
-pub fn calculate_savings_dpt_unit_rate(active_users_dpt: &[f64], total_open_months: f64, total_eth: f64) -> f64 {
-    assert!(active_users_dpt.len() > 0, "active_users_dpt must be greater than zero");
+pub fn calculate_savings_dpt_unit_rate(active_users_count: u64, active_users_dpt: f64, total_open_months: f64, total_eth: f64) -> f64 {
+    assert!(active_users_count > 0, "active_users must be greater than zero");
+    assert!(active_users_dpt > 0.0, "active_users_dpt must be greater than zero");
     assert!(total_open_months > 0.0, "total_open_months must be greater than zero");
 
-    let active_users_total_dpt: f64 = active_users_dpt.iter().sum();
+    let avg_open_months = total_open_months / active_users_count as f64;
 
-    let avg_open_months = total_open_months / active_users_dpt.len() as f64;
-
-    floor(total_eth / (active_users_total_dpt * avg_open_months))
+    floor(total_eth / (active_users_dpt * avg_open_months))
 }
 
 
@@ -135,7 +134,8 @@ mod tests {
         let total_open_months = 480.0 * 10.0;
         let total_eth = 480.0 * 10.0;
 
-        let result = calculate_savings_dpt_unit_rate(&users_dpt,
+        let result = calculate_savings_dpt_unit_rate(users_dpt.len() as u64,
+                                                     users_dpt.iter().sum(),
                                                      total_open_months,
                                                      total_eth);
         assert_eq!(result, floor(1.0 / 480.0));
