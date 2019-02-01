@@ -1,3 +1,4 @@
+use std::env;
 use crate::new::types::*;
 use crate::new::contributor::Contributor;
 use crate::new::pensioner::Pensioner;
@@ -11,9 +12,11 @@ pub mod pensioner;
 pub mod types;
 pub mod user;
 
-#[warn(unused_variables)]
 pub trait PensionSimulation {
-    fn name(&mut self) -> String;
+    fn name(&mut self) -> String {
+        let args: Vec<String> = env::args().collect();
+        (&args[0]).to_string() //.split(r"\").collect().reverse()[0]
+    }
 
     fn new_contributors(&mut self, period: Period) -> u64 {
         match period {
