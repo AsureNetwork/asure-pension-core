@@ -213,7 +213,7 @@ impl Pension {
                     if monthly_dpt_unit_rate < state.contributions_avg {
                         pensioner.claim_pension(period, savings_dpt_unit_rate);
                     }
-                    0.0
+                    pension
                 }
                 Err(_) => pensioner.claim_pension(period, savings_dpt_unit_rate)
             };
