@@ -158,10 +158,7 @@ impl Pension {
         state.current_dpt_bonus = current_dpt_bonus;
         state.current_contribution_value = current_contribution_value;
 
-        // TODO: Is this correct?
-        if contributions.len() == 0 {
-            return Ok(());
-        } else {
+        if contributions.len() > 0 {
             let mut sorted_period_amounts: Vec<f64> = contributions.to_vec();
             sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
             state.max_contribution_value = *sorted_period_amounts.last().unwrap();
