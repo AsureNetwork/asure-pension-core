@@ -50,6 +50,7 @@ pub struct Pension {
     pensioners_total: u64,
     done_users_total: u64,
 
+    pub(super) savings_total: Unit,
     pub(super) contributions_total: Unit,
     pub(super) pensions_total: Unit,
     periods_open: Period,
@@ -69,6 +70,7 @@ impl Pension {
             pensioners_total: 0,
             done_users_total: 0,
 
+            savings_total: 0.0,
             contributions_total: 0.0,
             pensions_total: 0.0,
             periods_open: 0,
@@ -101,6 +103,7 @@ impl Pension {
         state.contributions_total += contribution;
         state.contributions_avg = state.contributions_total / state.contributions.len() as Unit;
 
+        self.savings_total += contribution;
         self.contributions_total += contribution;
 
         Ok(())
@@ -220,7 +223,12 @@ impl Pension {
         state.pensions_total += pension;
 
         self.pensions_total += pension;
+        self.savings_total -= pension;
         self.periods_open -= 1;
+
+        //    assert!(self.contributions_total - self.pensions_total >= 0.0,
+        //            "self.contributions_total {} - self.pensions_total {} = {}",
+        //            self.contributions_total, self.pensions_total, self.contributions_total - self.pensions_total);
 
         Ok(())
     }
@@ -261,11 +269,11 @@ impl Pension {
 
         let savings_dpt_unit_rate = if total_open_months <= 0.0 {
             Some(Err("no total_open_months in period".to_string()))
-        } else if self.contributions_total <= 0.0 {
+        } else if self.savings_total <= 0.0 {
             Some(Err("no contributions in period".to_string()))
         } else {
             Some(Ok(calculate_savings_dpt_unit_rate(
-                active_users_count, active_users_dpt, total_open_months, self.contributions_total,
+                active_users_count, active_users_dpt, total_open_months, self.savings_total,
             )))
         };
 
