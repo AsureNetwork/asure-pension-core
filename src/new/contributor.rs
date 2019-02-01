@@ -39,7 +39,7 @@ impl Contributor {
         if contribution > self.wallet {
             return Err("contribution to bigger than wallet".to_string());
         }
-        if period > 480 {
+        if self.contributions.len() > 480 {
             return Err("contribution can only be done for 480 periods".to_string());
         }
 
