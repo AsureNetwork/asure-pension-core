@@ -27,6 +27,13 @@ impl User {
         }
     }
 
+    pub fn to_pensioner(&self) -> Option<&Pensioner> {
+        match self {
+            User::Pensioner(pensioner) => Some(pensioner),
+            _ => None
+        }
+    }
+
     pub fn to_pensioner_mut(&mut self) -> Option<&mut Pensioner> {
         match self {
             User::Pensioner(pensioner) => Some(pensioner),

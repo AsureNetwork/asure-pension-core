@@ -68,7 +68,7 @@ pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimu
 
 
         // 7. Log state after period is done
-        //pension.print();
+        print(&pension, &users);
         //pension_exporter.add_pension(&pension);
         //pension_exporter.add_users(&pension);
 
@@ -171,4 +171,51 @@ fn claim_dpts<T>(_simulation: &mut T, pension: &mut Pension, users: &mut Vec<Use
         });
 
     Ok(())
+}
+
+pub fn print(pension: &Pension, users: &[User]) {
+    let contributor_count = users
+        .iter()
+        .filter_map(|user| user.to_contributor())
+        .count();
+
+    let pensioner_count = users
+        .iter()
+        .filter_map(|user| user.to_pensioner())
+        .count();
+
+    let done_count = users
+        .iter()
+        .filter_map(|user| user.to_done_user())
+        .count();
+
+
+    let total_pension_eth = pension.pensions_total;
+
+    println!("Period: {}, Total Eth: {}, Total Pension Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
+             pension.period, pension.contributions_total, pension.pensions_total, pension.dpt_total, contributor_count, pensioner_count, done_count);
+    for user in users {
+        match user {
+            User::Contributor(contributor) => {
+                let last_dpt = match contributor.dpts.get(&pension.period) {
+                    Some(dpt) => format!("{}", dpt),
+                    None => "0".to_string()
+                };
+
+                println!("User: {}, Status: {}, Wallet: {}, Pension: {}, Pension Months Allowed: {}, Pensions Months Received: {}, DPT: {} + ({})",
+                         contributor.id(), "Contributor", contributor.wallet(), 0, contributor.allowed_pension_periods(),
+                         0, contributor.dpt_total(), last_dpt);
+            }
+            User::Pensioner(pensioner) => {
+                println!("User: {}, Status: {}", pensioner.contributor.id(), "Pensioner");
+            }
+            User::Done(done_user) => {
+                println!("User: {}, Status: {}", done_user.pensioner.contributor.id(), "Done");
+            }
+        }
+    }
+
+    println!();
+    println!("-------------------------");
+    println!();
 }

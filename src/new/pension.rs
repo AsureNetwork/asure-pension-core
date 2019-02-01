@@ -43,13 +43,14 @@ impl PeriodState {
 }
 
 pub struct Pension {
-    pub period: Period,
+    pub(super) period: Period,
     period_states: HashMap<Period, PeriodState>,
 
-    contributions_total: Unit,
+    pub(super) contributions_total: Unit,
+    pub(super) pensions_total: Unit,
     periods_open: Period,
 
-    dpt_total: Dpt,
+    pub(super) dpt_total: Dpt,
     dpt_pensioner: Dpt,
     dpt_done: Dpt,
 }
@@ -61,6 +62,7 @@ impl Pension {
             period_states: HashMap::new(),
 
             contributions_total: 0.0,
+            pensions_total: 0.0,
             periods_open: 0,
 
             dpt_total: 0.0,
@@ -205,7 +207,9 @@ impl Pension {
         let state = self.period_state_mut();
         state.pensions_total += pension;
 
+        self.pensions_total += pension;
         self.periods_open -= 1;
+
         Ok(())
     }
 

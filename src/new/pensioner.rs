@@ -30,7 +30,7 @@ impl Pensioner {
     }
 
     pub fn try_finish(self) -> User {
-        if self.pension_periods() >= self.allowed_pension_periods() {
+        if self.pension_periods() >= self.contributor.allowed_pension_periods() {
             User::Done(DoneUser::new(self))
         } else {
             User::Pensioner(self)
@@ -39,10 +39,6 @@ impl Pensioner {
 
     pub fn pension_periods(&self) -> u64 {
         0
-    }
-
-    pub fn allowed_pension_periods(&self) -> u64 {
-        (self.contributor.contribution_periods() * self.contributor.contribution_periods()) / 480
     }
 
     pub fn total_pension(&self) -> Unit {
