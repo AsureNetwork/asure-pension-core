@@ -38,7 +38,7 @@ impl Pensioner {
     }
 
     pub fn pension_periods(&self) -> u64 {
-        0
+        self.pensions.len() as u64
     }
 
     pub fn total_pension(&self) -> Unit {
