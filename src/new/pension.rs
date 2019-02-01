@@ -9,7 +9,6 @@ use std::cmp::Ordering;
 pub struct PeriodState {
     current_dpt_bonus: Dpt,
     current_contribution_value: Unit,
-    current_contribution_value_degree: Unit,
     max_contribution_value: Unit,
 
     monthly_dpt_unit_rate: Option<Result<f64, String>>,
@@ -25,9 +24,8 @@ pub struct PeriodState {
 impl PeriodState {
     pub fn new() -> Self {
         PeriodState {
-            current_dpt_bonus: 0.5,
+            current_dpt_bonus: 1.5,
             current_contribution_value: 1.0,
-            current_contribution_value_degree: 10.0,
             max_contribution_value: 1.0,
 
             monthly_dpt_unit_rate: None,
@@ -45,6 +43,9 @@ impl PeriodState {
 pub struct Pension {
     pub(super) period: Period,
     period_states: HashMap<Period, PeriodState>,
+
+    current_contribution_value: Unit,
+    current_contribution_value_degree: Unit,
 
     contributors_total: u64,
     pensioners_total: u64,
@@ -65,6 +66,9 @@ impl Pension {
         Pension {
             period: 0,
             period_states: HashMap::new(),
+
+            current_contribution_value: 1.0,
+            current_contribution_value_degree: 10.0,
 
             contributors_total: 0,
             pensioners_total: 0,
@@ -133,7 +137,6 @@ impl Pension {
 
     pub fn prepare_claim_dpt(&mut self, users: &[User]) -> Result<(), String> {
         let period = self.period;
-        let mut state = self.period_state_mut();
 
         let contributions = users
             .iter()
@@ -142,21 +145,27 @@ impl Pension {
             .map(|contribution| *contribution)
             .collect::<Vec<_>>();
 
+
+        let current_dpt_bonus = calculate_dpt_bonus_by_period(period);
+        let current_contribution_value = calculate_contribution_value(
+            self.current_contribution_value,
+            self.current_contribution_value_degree,
+            &contributions,
+        );
+        self.current_contribution_value = current_contribution_value;
+
+        let mut state = self.period_state_mut();
+        state.current_dpt_bonus = current_dpt_bonus;
+        state.current_contribution_value = current_contribution_value;
+
         // TODO: Is this correct?
         if contributions.len() == 0 {
             return Ok(());
+        } else {
+            let mut sorted_period_amounts: Vec<f64> = contributions.to_vec();
+            sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+            state.max_contribution_value = *sorted_period_amounts.last().unwrap();
         }
-
-        state.current_dpt_bonus = calculate_dpt_bonus_by_period(period);
-        state.current_contribution_value = calculate_contribution_value(
-            state.current_contribution_value,
-            state.current_contribution_value_degree,
-            &contributions,
-        );
-
-        let mut sorted_period_amounts: Vec<f64> = contributions.to_vec();
-        sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-        state.max_contribution_value = *sorted_period_amounts.last().unwrap();
 
         Ok(())
     }
