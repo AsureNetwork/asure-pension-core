@@ -192,9 +192,6 @@ pub fn print(pension: &Pension, users: &[User]) {
         .filter_map(|user| user.to_done_user())
         .count();
 
-
-    let total_pension_eth = pension.pensions_total;
-
     println!("Period: {}, Total Eth: {}, Total Pension Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
              pension.period, pension.contributions_total, pension.pensions_total, pension.dpt_total, contributor_count, pensioner_count, done_count);
     for user in users {
