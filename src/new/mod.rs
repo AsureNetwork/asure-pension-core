@@ -4,19 +4,35 @@ use crate::new::pensioner::Pensioner;
 use crate::new::user::User;
 use crate::new::pension::Pension;
 
-mod contributor;
-mod doneuser;
-mod pension;
-mod pensioner;
-mod types;
-mod user;
+pub mod contributor;
+pub mod doneuser;
+pub mod pension;
+pub mod pensioner;
+pub mod types;
+pub mod user;
 
+#[warn(unused_variables)]
 pub trait PensionSimulation {
     fn name(&mut self) -> String;
-    fn new_contributors(&mut self, period: Period) -> u64;
-    fn should_retire(&mut self, contributor: &Contributor, period: Period) -> bool;
-    fn should_contribute(&mut self, contributor: &Contributor, period: Period) -> Option<Unit>;
-    fn should_claim_pension(&mut self, pensioner: &Pensioner, period: Period) -> bool;
+
+    fn new_contributors(&mut self, period: Period) -> u64 {
+        match period {
+            1 => 10,
+            _ => 0
+        }
+    }
+
+    fn should_retire(&mut self, contributor: &Contributor, _period: Period) -> bool {
+        contributor.contributions.len() == 480
+    }
+
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
+        Some(1.0)
+    }
+
+    fn should_claim_pension(&mut self, _pensioner: &Pensioner, _period: Period) -> bool {
+        true
+    }
 }
 
 pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimulation {
