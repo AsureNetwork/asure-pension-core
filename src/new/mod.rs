@@ -207,10 +207,17 @@ pub fn print(pension: &Pension, users: &[User]) {
                          0, contributor.dpt_total(), last_dpt);
             }
             User::Pensioner(pensioner) => {
-                println!("User: {}, Status: {}", pensioner.contributor.id(), "Pensioner");
+                let contributor = &pensioner.contributor;
+                println!("User: {}, Status: {}, Wallet: {}, Pension: {}, Pension Months Allowed: {}, Pensions Months Received: {}, DPT: {}",
+                         contributor.id(), "Pensioner", contributor.wallet(), pensioner.total_pension(),
+                         contributor.allowed_pension_periods(), pensioner.pension_periods(), contributor.dpt_total());
             }
             User::Done(done_user) => {
-                println!("User: {}, Status: {}", done_user.pensioner.contributor.id(), "Done");
+                let pensioner = &done_user.pensioner;
+                let contributor = &pensioner.contributor;
+                println!("User: {}, Status: {}, Wallet: {}, Pension: {}, Pension Months Allowed: {}, Pensions Months Received: {}, DPT: {}",
+                         contributor.id(), "Done", contributor.wallet(), pensioner.total_pension(),
+                         contributor.allowed_pension_periods(), pensioner.pension_periods(), contributor.dpt_total());
             }
         }
     }
