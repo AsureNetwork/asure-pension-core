@@ -211,9 +211,10 @@ impl Pension {
             pension = match monthly_dpt_unit_rate {
                 Ok(monthly_dpt_unit_rate) => {
                     if monthly_dpt_unit_rate < state.contributions_avg {
-                        pensioner.claim_pension(period, savings_dpt_unit_rate);
+                        pensioner.claim_pension(period, savings_dpt_unit_rate)
+                    } else {
+                        pension
                     }
-                    pension
                 }
                 Err(_) => pensioner.claim_pension(period, savings_dpt_unit_rate)
             };
