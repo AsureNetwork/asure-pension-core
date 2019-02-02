@@ -143,8 +143,8 @@ impl Pension {
 
         println!("{:?}", pension);
 
-        pension_exporter.export_pensions(format!("{}-pensions.csv", simulation.name().to_lowercase()));
-        pension_exporter.export_users(format!("{}-users.csv", simulation.name().to_lowercase()));
+        pension_exporter.export_pensions(format!("csv/{}-pensions.csv", simulation.name().to_lowercase()));
+        pension_exporter.export_users(format!("csv/{}-users.csv", simulation.name().to_lowercase()));
     }
 
     pub fn print(&self) {
