@@ -11,7 +11,7 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 12".to_string()
+        "Sim 11".to_string()
     }
 
     fn create_user(&mut self, current_period: u64) -> u32 {
@@ -31,7 +31,7 @@ impl PensionSimulation for Sim {
         contributor.transactions.len() == 480
     }
 
-    fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
+    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
         Some(1.0)
     }
 }
