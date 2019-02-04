@@ -192,8 +192,10 @@ pub fn print(pension: &Pension, users: &[User]) {
         .filter_map(|user| user.to_done_user())
         .count();
 
-    println!("Period: {}, Total Eth: {}, Total Contributions Eth: {}, Total Pension Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
-             pension.period, pension.savings_total, pension.contributions_total, pension.pensions_total, pension.dpt_total, contributor_count, pensioner_count, done_count);
+    println!("Period: {}, Total Eth: {}, Total Contributions Eth: {}, Total Pension Eth: {}, Total Laggards: {}",
+             pension.period, pension.savings_total, pension.contributions_total, pension.pensions_total, pension.laggards_total);
+    println!("Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
+             pension.dpt_total, contributor_count, pensioner_count, done_count);
     for user in users {
         match user {
             User::Contributor(contributor) => {

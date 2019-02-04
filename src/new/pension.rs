@@ -14,12 +14,15 @@ pub struct PeriodState {
 
     monthly_dpt_unit_rate: Option<Result<f64, String>>,
     savings_dpt_unit_rate: Option<Result<f64, String>>,
+    laggards_dpt_unit_rate: Option<Result<f64, String>>,
 
     contributions: Vec<Unit>,
     contributions_total: Unit,
     contributions_avg: Unit,
+    laggards_total: Unit,
 
     pensions_total: Unit,
+
 }
 
 impl PeriodState {
@@ -31,12 +34,15 @@ impl PeriodState {
 
             monthly_dpt_unit_rate: None,
             savings_dpt_unit_rate: None,
+            laggards_dpt_unit_rate: None,
 
             contributions: vec![],
             contributions_total: 0.0,
             contributions_avg: 0.0,
+            laggards_total: 0.0,
 
             pensions_total: 0.0,
+
         }
     }
 }
@@ -55,7 +61,7 @@ pub struct Pension {
     pub(super) savings_total: Unit,
     pub(super) contributions_total: Unit,
     pub(super) pensions_total: Unit,
-    //pub(super) laggards_total: Unit,
+    pub(super) laggards_total: Unit,
     periods_open: Period,
 
     pub(super) dpt_total: Dpt,
@@ -79,7 +85,7 @@ impl Pension {
             savings_total: 0.0,
             contributions_total: 0.0,
             pensions_total: 0.0,
-            //laggards_total: 0.0,
+            laggards_total: 0.0,
             periods_open: 0,
 
             dpt_total: 0.0,
@@ -105,18 +111,19 @@ impl Pension {
     pub fn contribute(&mut self, contributor: &mut Contributor, contribution: Unit) -> Result<(), String> {
         contributor.contribute(contribution, self.period)?;
 
-        let mut state = self.period_state_mut();
-        state.contributions.push(contribution);
-        state.contributions_total += contribution;
-        state.contributions_avg = state.contributions_total / state.contributions.len() as Unit;
-
-
         self.contributions_total += contribution;
         self.savings_total += contribution;
 
-//        if contributor.has_retire_months(){
-//            self.laggards_total += contribution;
-//        }
+        let mut state = self.period_state_mut();
+        state.contributions.push(contribution);
+
+        if contributor.has_retire_months() {
+            state.contributions_total += contribution;
+            state.contributions_avg = state.contributions_total / state.contributions.len() as Unit;
+        } else {
+            state.laggards_total += contribution;
+            self.laggards_total += contribution;
+        }
 
         Ok(())
     }
@@ -125,6 +132,7 @@ impl Pension {
         self.dpt_pensioner += contributor.dpts.values().map(|dpt| dpt).sum::<Dpt>();
         self.contributors_total -= 1;
         self.pensioners_total += 1;
+        self.periods_open -= 480 - contributor.allowed_pension_periods();
         contributor.retire()
     }
 
@@ -206,12 +214,14 @@ impl Pension {
         // for the current period.
         self.calculate_monthly_dpt_unit_rate();
         self.calculate_savings_dpt_unit_rate();
+        self.calculate_laggards_dpt_unit_rate();
 
         let period = self.period;
         let state = self.period_state();
 
         let monthly_dpt_unit_rate = state.monthly_dpt_unit_rate.clone().unwrap();
         let savings_dpt_unit_rate = state.savings_dpt_unit_rate.clone().unwrap();
+        let laggards_dpt_unit_rate = state.laggards_dpt_unit_rate.clone().unwrap();
 
         let mut pension = 0.0;
         // Redistribute contributions of current period if available
@@ -232,6 +242,11 @@ impl Pension {
                 }
                 Err(_) => pensioner.claim_pension(period, savings_dpt_unit_rate)
             };
+        }
+
+        //payout laggards_dpt_unit_rate
+        if let Ok(laggards_dpt_unit_rate) = laggards_dpt_unit_rate {
+            pension = pensioner.claim_pension(period, laggards_dpt_unit_rate);
         }
 
         let state = self.period_state_mut();
@@ -287,13 +302,45 @@ impl Pension {
         } else if self.savings_total <= 0.0 {
             Some(Err("no contributions in period".to_string()))
         } else {
+            let savings_redistribution_part = self.savings_total - self.laggards_total;
             Some(Ok(calculate_savings_dpt_unit_rate(
-                active_users_count, active_users_dpt, total_open_months, self.savings_total,
+                active_users_count, active_users_dpt, total_open_months,
+                savings_redistribution_part,
             )))
         };
 
         let state = self.period_state_mut();
         state.savings_dpt_unit_rate = savings_dpt_unit_rate;
+    }
+
+    fn calculate_laggards_dpt_unit_rate(&mut self) {
+        let state = self.period_state();
+        if state.laggards_dpt_unit_rate.is_some() {
+            return ();
+        }
+
+        let open_period_rate = self.pensioners_total / self.periods_open;
+        if open_period_rate == 1 {
+            let active_users_count = self.contributors_total + self.pensioners_total;
+            let active_users_dpt = self.dpt_total - self.dpt_done;
+            let total_open_months = self.periods_open as f64;
+
+            let laggards_dpt_unit_rate = if total_open_months <= 0.0 {
+                Some(Err("no total_open_months in period".to_string()))
+            } else if self.laggards_total <= 0.0 {
+                Some(Err("no laggards in period".to_string()))
+            } else {
+                Some(Ok(calculate_laggards_dpt_unit_rate(
+                    active_users_count, active_users_dpt, total_open_months, self.laggards_total,
+                )))
+            };
+
+            let state = self.period_state_mut();
+            state.laggards_dpt_unit_rate = laggards_dpt_unit_rate;
+        } else {
+            let state = self.period_state_mut();
+            state.laggards_dpt_unit_rate = Some(Err("no rate".to_string()));
+        }
     }
 
     fn period_state(&self) -> &PeriodState {

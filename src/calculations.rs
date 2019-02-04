@@ -95,14 +95,24 @@ pub fn calculate_monthly_dpt_unit_rate(contributions_month: &[f64], pension_dpt_
     floor((contributions_month_avg / 480.0).min(monthly_dpt_unit_rate))
 }
 
-pub fn calculate_savings_dpt_unit_rate(active_users_count: u64, active_users_dpt: f64, total_open_months: f64, total_eth: f64) -> f64 {
+pub fn calculate_savings_dpt_unit_rate(active_users_count: u64, active_users_dpt: f64, total_open_months: f64, total_unit: f64) -> f64 {
     assert!(active_users_count > 0, "active_users must be greater than zero");
     assert!(active_users_dpt > 0.0, "active_users_dpt must be greater than zero");
     assert!(total_open_months > 0.0, "total_open_months must be greater than zero");
 
     let avg_open_months = total_open_months / active_users_count as f64;
 
-    floor(total_eth / (active_users_dpt * avg_open_months))
+    floor(total_unit / (active_users_dpt * avg_open_months))
+}
+
+pub fn calculate_laggards_dpt_unit_rate(active_users_count: u64, active_users_dpt: f64, total_open_months: f64, total_unit: f64) -> f64 {
+    assert!(active_users_count > 0, "active_users must be greater than zero");
+    assert!(active_users_dpt > 0.0, "active_users_dpt must be greater than zero");
+    assert!(total_open_months > 0.0, "total_open_months must be greater than zero");
+
+    let avg_open_months = total_open_months / active_users_count as f64;
+
+    floor(total_unit / (active_users_dpt * avg_open_months))
 }
 
 
@@ -140,6 +150,7 @@ mod tests {
                                                      total_eth);
         assert_eq!(result, floor(1.0 / 480.0));
     }
+
 
     #[test]
     fn test_calculate_monthly_dpt_unit_rate() {
@@ -193,13 +204,13 @@ mod tests {
         assert_eq!(result, 2.0);
     }
 
-//    #[test]
-//    fn median() {
-//        let mut numbers = [1.0, 0.1, 5.0];
-//        let result = calculations::median(&mut numbers);
-//
-//        assert_eq!(result, 1.0);
-//    }
+    #[test]
+    fn calculate_entitlement_months() {
+        let mut result = super::calculate_entitlement_months(12);
+        assert_eq!(result, 0);
+        result = super::calculate_entitlement_months(22);
+        assert_eq!(result, 1);
+    }
 
     #[test]
     fn test_calculate_contribution_value() {
