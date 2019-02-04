@@ -58,8 +58,8 @@ pub fn calculate_dpt(amount: f64,
     1f64 * dpt_bonus //amount == ccv
 }
 
-pub fn calculate_entitlement_months(periods: u64) -> f64 {
-    return (periods as f64).powf(2.0) / 480f64;
+pub fn calculate_entitlement_months(periods: u64) -> u64 {
+    return (periods * periods) / 480;
 }
 
 pub fn calculate_dpt_bonus_by_period(period: u64) -> f64 {

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::new::types::*;
 use crate::new::user::User;
 use crate::new::pensioner::Pensioner;
+use crate::calculations::*;
 
 static USER_COUNTER: AtomicUsize = atomic::ATOMIC_USIZE_INIT;
 
@@ -26,6 +27,7 @@ impl Contributor {
     pub fn id(&self) -> usize {
         self.id
     }
+
 
 
     pub fn wallet(&self) -> Unit {
@@ -73,8 +75,13 @@ impl Contributor {
         self.contributions.len() as u64
     }
 
+    pub fn has_retire_months(&self) -> bool {
+        self.allowed_pension_periods() >= 1
+    }
+
     pub fn allowed_pension_periods(&self) -> u64 {
-        (self.contribution_periods() * self.contribution_periods()) / 480
+        let periods = self.contribution_periods();
+        calculate_entitlement_months(periods)
     }
 
     pub fn dpt_total(&self) -> Dpt {

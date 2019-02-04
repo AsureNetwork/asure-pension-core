@@ -1,10 +1,11 @@
-use crate::new::types::*;
-use std::collections::HashMap;
-use crate::new::contributor::Contributor;
-use crate::new::user::User;
-use crate::new::pensioner::Pensioner;
-use crate::calculations::*;
 use std::cmp::Ordering;
+use std::collections::HashMap;
+
+use crate::calculations::*;
+use crate::new::contributor::Contributor;
+use crate::new::pensioner::Pensioner;
+use crate::new::types::*;
+use crate::new::user::User;
 
 pub struct PeriodState {
     current_dpt_bonus: Dpt,
@@ -54,6 +55,7 @@ pub struct Pension {
     pub(super) savings_total: Unit,
     pub(super) contributions_total: Unit,
     pub(super) pensions_total: Unit,
+    //pub(super) laggards_total: Unit,
     periods_open: Period,
 
     pub(super) dpt_total: Dpt,
@@ -77,6 +79,7 @@ impl Pension {
             savings_total: 0.0,
             contributions_total: 0.0,
             pensions_total: 0.0,
+            //laggards_total: 0.0,
             periods_open: 0,
 
             dpt_total: 0.0,
@@ -107,8 +110,13 @@ impl Pension {
         state.contributions_total += contribution;
         state.contributions_avg = state.contributions_total / state.contributions.len() as Unit;
 
-        self.savings_total += contribution;
+
         self.contributions_total += contribution;
+        self.savings_total += contribution;
+
+//        if contributor.has_retire_months(){
+//            self.laggards_total += contribution;
+//        }
 
         Ok(())
     }
