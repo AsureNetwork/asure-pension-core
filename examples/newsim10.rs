@@ -16,14 +16,9 @@ impl PensionSimulation for Sim {
     }
 
     fn new_contributors(&mut self, current_period: Period) -> u64 {
-        if current_period == 1 {
-            return 10;
-        }
-        if current_period > 480 {
-            return 0;
-        }
-        match current_period % (15 + 1) {
-            0 => 10,
+        match current_period {
+            1 => 10,
+            481 => 10,
             _ => 0,
         }
     }
@@ -32,7 +27,7 @@ impl PensionSimulation for Sim {
         contributor.contributions.len() == 480
     }
 
-    fn should_contribute(&mut self, contributor: &Contributor, _period: Period) -> Option<Unit> {
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
         Some(1.0)
     }
 }
