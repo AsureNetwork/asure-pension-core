@@ -203,13 +203,13 @@ pub fn print(pension: &Pension, users: &[User]) {
                     Some(dpt) => format!("{}", dpt),
                     None => "0".to_string()
                 };
-                println!("User: {:2}, Status: {}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10} + ({})",
+                println!("User: {:2}, Status: {:12}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10} + ({})",
                          contributor.id(), "Contributor", contributor.wallet(), 0, contributor.allowed_pension_periods(),
                          0, 0, contributor.dpt_total(), last_dpt);
             }
             User::Pensioner(pensioner) => {
                 let contributor = &pensioner.contributor;
-                println!("User: {:2}, Status: {}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10}",
+                println!("User: {:2}, Status: {:12}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10}",
                          contributor.id(), "Pensioner", contributor.wallet(), pensioner.total_pension(),
                          contributor.allowed_pension_periods(), pensioner.pension_periods(), 0, contributor.dpt_total());
             }
@@ -217,7 +217,7 @@ pub fn print(pension: &Pension, users: &[User]) {
                 let pensioner = &done_user.pensioner;
                 let contributor = &pensioner.contributor;
                 let avg = pensioner.total_pension() / pensioner.pension_periods() as f64;
-                println!("User: {:2}, Status: {}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10}",
+                println!("User: {:2}, Status: {:12}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: ({:10.8}), DPT: {:14.10}",
                          contributor.id(), "Done", contributor.wallet(), pensioner.total_pension(),
                          contributor.allowed_pension_periods(), pensioner.pension_periods(), avg, contributor.dpt_total());
             }
