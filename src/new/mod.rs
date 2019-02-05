@@ -1,9 +1,11 @@
 use std::env;
-use crate::new::types::*;
+use std::time::{Duration, Instant};
+
 use crate::new::contributor::Contributor;
-use crate::new::pensioner::Pensioner;
-use crate::new::user::User;
 use crate::new::pension::Pension;
+use crate::new::pensioner::Pensioner;
+use crate::new::types::*;
+use crate::new::user::User;
 
 pub mod contributor;
 pub mod doneuser;
@@ -36,11 +38,15 @@ pub trait PensionSimulation {
     fn should_claim_pension(&mut self, _pensioner: &Pensioner, _period: Period) -> bool {
         true
     }
+
+    fn should_print(&mut self, _period: Period) -> bool {
+        true
+    }
 }
 
 pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimulation {
     println!("Pension {}", simulation.name());
-
+    let start = Instant::now();
     let mut users: Vec<User> = vec![];
     let mut pension = Pension::new();
     //let mut pension_exporter = PensionCsvExporter::new();
@@ -71,7 +77,9 @@ pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimu
 
 
         // 7. Log state after period is done
-        print(&pension, &users);
+        if simulation.should_print(pension.period) {
+            print(&pension, &users);
+        }
         //pension_exporter.add_pension(&pension);
         //pension_exporter.add_users(&pension);
 
@@ -86,6 +94,9 @@ pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimu
             break;
         }
     }
+
+    let duration: Duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
 
     //println!("{:?}", pension);
     //

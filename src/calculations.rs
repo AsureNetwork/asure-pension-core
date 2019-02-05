@@ -28,7 +28,7 @@ pub fn calculate_contribution_value(contribution_value: f64,
     let ccv = contribution_value;
     let diff = ((ref_value.max(ccv) - ref_value.min(ccv)) / ref_value.max(ccv)) * 100.0;
 
-    println!("ref_value {},ccv {} = diff {} %", ref_value, ccv, diff);
+    //println!("ref_value {},ccv {} = diff {} %", ref_value, ccv, diff);
     if diff > contribution_value_degree {
         let factor = contribution_value_degree / 100.0;
         if ref_value > contribution_value {
