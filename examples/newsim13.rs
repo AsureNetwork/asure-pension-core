@@ -18,15 +18,18 @@ impl PensionSimulation for Sim {
         if period >= 480 {
             return 0;
         }
-        match period % 2 {
-            0 => 4,
+        match period % 24 {
+            0 => 10,
             _ => 0,
         }
     }
 
     fn should_retire(&mut self, contributor: &Contributor, _period: Period) -> bool {
-        if contributor.id() % 5 == 0 && contributor.contributions.len() == 240
-            { return true; } else if contributor.contributions.len() == 480
+        if (contributor.id() % 5 == 0 && contributor.contributions.len() == 240)
+            ||
+            (contributor.id() % 10 == 0 && contributor.contributions.len() == 360)
+            ||
+            contributor.contributions.len() == 480
             { return true; }
         return false;
     }
@@ -36,7 +39,7 @@ impl PensionSimulation for Sim {
     }
 
     fn should_print(&mut self, period: Period) -> bool {
-        period == 1437
+        period == 1415
     }
 }
 
