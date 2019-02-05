@@ -95,6 +95,19 @@ pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimu
         }
     }
 
+    let res = users.iter()
+        .filter_map(|user| user.to_done_user())
+        .fold((0, 0), |(pos, neg), done_user| {
+            let pensioner = &done_user.pensioner;
+            let contributor = &pensioner.contributor;
+            let diff = (contributor.wallet() + pensioner.total_pension()) - 10000000.0;
+            if diff >= 0.0 {
+                (pos + 1, neg)
+            } else {
+                (pos, neg + 1)
+            }
+        });
+    println!("Res: {:?}", res);
     let duration: Duration = start.elapsed();
     println!("Time elapsed: {:?}", duration);
 
