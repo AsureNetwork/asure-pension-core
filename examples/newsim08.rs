@@ -13,7 +13,7 @@ impl Sim {
 impl PensionSimulation for Sim {
     fn should_contribute(&mut self, contributor: &Contributor, _period: Period) -> Option<Unit> {
         match contributor.id() {
-            0 => Some(3.0),
+            0 => Some(10.0),
             1 => Some(2.0),
             2 => Some(2.0),
             _ => Some(1.0),

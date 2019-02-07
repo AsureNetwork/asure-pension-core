@@ -50,7 +50,9 @@ pub fn calculate_dpt(unit: f64,
     let ccv = contribution_value;
 
     if unit > ccv {
-        return (1.0 + ((unit - ccv) / (max - ccv))) * dpt_bonus;
+        return (1.0 + ((unit - ccv) / (ccv * 2.0 - ccv))).max(2.0) * dpt_bonus;
+        //return (1.0 + ((unit - ccv) / (max - ccv))) * dpt_bonus;
+
     }
     if unit < ccv {
         return ((unit - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * dpt_bonus;
