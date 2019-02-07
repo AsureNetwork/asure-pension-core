@@ -40,20 +40,20 @@ pub fn calculate_contribution_value(contribution_value: f64,
     return contribution_value;
 }
 
-pub fn calculate_dpt(amount: f64,
+pub fn calculate_dpt(unit: f64,
                      contribution_value: f64,
                      dpt_bonus: f64,
                      max: f64) -> f64 {
     assert!(dpt_bonus >= 1.0 && dpt_bonus <= 1.5);
-    assert!(max >= amount);
+    assert!(max >= unit);
 
     let ccv = contribution_value;
 
-    if amount > ccv {
-        return (1.0 + (amount - ccv) / (max - ccv)) * dpt_bonus;
+    if unit > ccv {
+        return (1.0 + ((unit - ccv) / (max - ccv))) * dpt_bonus;
     }
-    if amount < ccv {
-        return ((amount - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * dpt_bonus;
+    if unit < ccv {
+        return ((unit - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * dpt_bonus;
     }
     1f64 * dpt_bonus //amount == ccv
 }
