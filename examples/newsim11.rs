@@ -32,7 +32,7 @@ impl PensionSimulation for Sim {
         contributor.contributions.len() == 480
     }
 
-    fn should_contribute(&mut self, contributor: &Contributor, _period: Period) -> Option<Unit> {
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
         Some(1.0)
     }
 }

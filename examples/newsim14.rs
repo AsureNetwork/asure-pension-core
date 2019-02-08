@@ -1,6 +1,6 @@
 //cargo run --example newsim05
 use asure_pension_core::new::*;
-use asure_pension_core::new::contributor::*;
+//use asure_pension_core::new::contributor::*;
 use asure_pension_core::new::types::*;
 use asure_pension_core::new::pensioner::Pensioner;
 
