@@ -127,7 +127,7 @@ impl Pension {
 
         Ok(())
     }
-
+    //todo contributor join();
     pub fn retire(&mut self, contributor: Contributor) -> User {
         self.dpt_pensioner += contributor.dpts.values().map(|dpt| dpt).sum::<Dpt>();
         self.contributors_total -= 1;
@@ -355,5 +355,44 @@ impl Pension {
             Some(state) => state,
             None => panic!(format!("No state for period {} found", self.period))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::new::pension::Pension;
+    use crate::new::contributor::Contributor;
+    use std::collections::HashMap;
+    use crate::new::types::Dpt;
+
+    #[test]
+    fn start_new_period() {
+        let mut pension = Pension::new();
+        pension.start_new_period();
+        assert_eq!(pension.period, 1);
+    }
+
+    #[test]
+    fn join() {
+        let mut pension = Pension::new();
+        let mut contributor = Contributor:: new();
+        contributor.contribute(1.0, 1);
+        pension.join(&contributor);
+        assert_eq!(pension.contributors_total, 1);
+        assert_eq!(pension.periods_open, 480);
+    }
+
+    #[test]
+    fn retire() {
+        let mut pension = Pension::new();
+        let mut contributor = Contributor:: new();
+        pension.join(&contributor);
+        for period in 1..241 {
+            contributor.contribute(1.0, period);
+        }
+        pension.retire(contributor);
+        assert_eq!(pension.pensioners_total, 1);
+        assert_eq!(pension.contributors_total, 0);
+        assert_eq!(pension.periods_open, 120);
     }
 }
