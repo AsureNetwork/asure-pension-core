@@ -342,38 +342,3 @@ impl Pension {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::*;
-
-    #[test]
-    fn create_users() {
-        let mut pension = Pension::new();
-        pension.create_users(5);
-
-        assert_eq!(pension.users.len(), 5);
-    }
-
-//    #[test]
-//    fn start_should_create_a_new_period() {
-//        let mut pension = Pension::new();
-//        //assert!(pension.current_period.is_none());
-//        pension.start();
-//        assert!(pension.current_period);
-//    }
-
-//    #[test]
-//    fn calculate_avg_points_should_be_zero_to_zero_five() {
-//        let mut pension = Pension::new();
-//
-//        pension.current_period = 1;
-//        let result_zero_five = pension.calculate_dpt_bonus();
-//        println!("{}", result_zero_five);
-//        assert_eq!(result_zero_five, 0.5f64);
-//
-//        pension.current_period = 40 * 12;
-//        let zero = pension.calculate_dpt_bonus();
-//        println!("{}", zero);
-//        assert_eq!(zero, 0.0f64);
-//    }
-}

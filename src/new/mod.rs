@@ -256,3 +256,49 @@ pub fn print(pension: &Pension, users: &[User]) {
     println!("-------------------------");
     println!();
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn create_users() {
+        let mut pension = Pension::new();
+        pension.create_users(5);
+
+        assert_eq!(pension.users.len(), 5);
+    }
+
+    #[test]
+    fn add_amount(){
+        let mut pension = Pension::new();
+        pension.add_amount(100.0);
+        assert_eq!(pension.total_eth, 100.0);
+        assert_eq!(pension.total_month_eth, 100.0);
+    }
+
+    #[test]
+    fn payout(){
+        let mut pension = Pension::new();
+        pension.create_users(10);
+        pension.current_period = 1;
+        pension.payout();
+
+    }
+    #[test]
+    fn start_should_create_init_dpt_bonus(){
+        let mut pension = Pension::new();
+        pension.start();
+        assert_eq!(pension.current_dpt_bonus, 1.5);
+    }
+    #[test]
+    fn start_should_create_a_new_period() {
+        let mut pension = Pension::new();
+        assert!(pension.current_period == 0);
+        pension.start();
+        assert!(pension.current_period > 0);
+    }
+
+
+
+}

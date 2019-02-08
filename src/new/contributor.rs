@@ -88,3 +88,66 @@ impl Contributor {
         self.dpts.values().map(|dpt| dpt).sum()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::new::contributor::Contributor;
+
+    #[test]
+    fn contribute_contribution_must_be_bigger_than_0() {
+        let mut contributor = Contributor::new();
+        contributor.contribute(0.0,1);
+        assert!(contributor.contribute(0.0,1).is_err());
+        assert!(contributor.contribute(-1.0, 1).is_err())
+    }
+
+    #[test]
+    fn contribute_contribution_bigger_than_wallet() {
+        let mut contributor = Contributor::new();
+        assert!(contributor.contribute(10000001.0,1).is_err());
+    }
+
+    #[test]
+    fn contribute_max_period() {
+        let mut contributor = Contributor::new();
+        for periond in 1..481  {
+            contributor.contribute(1.0, periond);
+        }
+        assert_eq!(contributor.contributions.len(), 480);
+        contributor.contribute(1.0, 481);
+        assert!(contributor.contribute(1.0,482).is_err());
+    }
+
+    #[test]
+    fn contribute_contribution_done() {
+        let mut contributor = Contributor::new();
+
+        for periond in 1..481  {
+            contributor.contribute(1.0, periond);
+        }
+        assert_eq!(contributor.wallet(), 9999520.0);
+    }
+
+    #[test]
+    fn claim_dpt_dpt_already_claimed_for_period(){
+        let mut contributor = Contributor::new();
+        contributor.dpts.insert(1, 1.0);
+        assert!(contributor.claim_dpt(1.0, 1).is_err());
+    }
+
+    #[test]
+    fn claim_dpt_done(){
+        let mut contributor = Contributor::new();
+        contributor.dpts.insert(1, 1.0);
+        assert_eq!(contributor.dpts.len(), 1);
+    }
+
+    #[test]
+    fn dpt_total(){
+        let mut contributor = Contributor::new();
+        for periond in 1..481  {
+            contributor.dpts.insert(periond, 1.0);
+        }
+        assert_eq!(contributor.dpt_total(), 480.0);
+    }
+}
