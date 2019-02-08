@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+//use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::calculations::*;
@@ -10,7 +10,7 @@ use crate::new::user::User;
 pub struct PeriodState {
     current_dpt_bonus: Dpt,
     current_contribution_value: Unit,
-    max_contribution_value: Unit,
+    //max_contribution_value: Unit,
 
     monthly_dpt_unit_rate: Option<Result<f64, String>>,
     savings_dpt_unit_rate: Option<Result<f64, String>>,
@@ -30,7 +30,7 @@ impl PeriodState {
         PeriodState {
             current_dpt_bonus: 1.5,
             current_contribution_value: 1.0,
-            max_contribution_value: 1.0,
+            //max_contribution_value: 1.0,
 
             monthly_dpt_unit_rate: None,
             savings_dpt_unit_rate: None,
@@ -174,11 +174,11 @@ impl Pension {
         state.current_dpt_bonus = current_dpt_bonus;
         state.current_contribution_value = current_contribution_value;
 
-        if contributions.len() > 0 {
-            let mut sorted_period_amounts: Vec<f64> = contributions.to_vec();
-            sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-            state.max_contribution_value = *sorted_period_amounts.last().unwrap();
-        }
+//        if contributions.len() > 0 {
+//            let mut sorted_period_amounts: Vec<f64> = contributions.to_vec();
+//            sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+//            state.max_contribution_value = *sorted_period_amounts.last().unwrap();
+//        }
 
         Ok(())
     }
@@ -191,7 +191,7 @@ impl Pension {
                 *contribution,
                 state.current_contribution_value,
                 state.current_dpt_bonus,
-                state.max_contribution_value,
+                //state.max_contribution_value,
             );
 
             contributor.claim_dpt(dpt, self.period)?;

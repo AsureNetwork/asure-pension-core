@@ -320,7 +320,7 @@ impl Pension {
         let mut sorted_period_amounts: Vec<f64> = period_amounts.to_vec();
         sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
 
-        let max = *sorted_period_amounts.last().unwrap();
+        //let max = *sorted_period_amounts.last().unwrap();
 
         self.total_month_dpt = 0.0;
 
@@ -330,7 +330,7 @@ impl Pension {
                     tx.amount,
                     self.ccv,
                     self.current_dpt_bonus,
-                    max,
+                    //max,
                 );
 
                 self.total_month_dpt += dpt;

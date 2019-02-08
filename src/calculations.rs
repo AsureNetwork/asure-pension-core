@@ -41,18 +41,17 @@ pub fn calculate_contribution_value(contribution_value: f64,
 }
 
 pub fn calculate_dpt(unit: f64,
-                     contribution_value: f64,
-                     dpt_bonus: f64,
-                     max: f64) -> f64 {
+                     ccv: f64,
+                     dpt_bonus: f64) -> f64 {
     assert!(dpt_bonus >= 1.0 && dpt_bonus <= 1.5);
-    assert!(max >= unit);
+    //assert!(max >= unit);
 
-    let ccv = contribution_value;
+    let ccv = ccv;
 
     if unit > ccv {
-        return (1.0 + ((unit - ccv) / (ccv * 2.0 - ccv))).max(2.0) * dpt_bonus;
+        return (unit / ccv).min(2.0) * dpt_bonus;
+        //return ((1.0 + (unit - ccv)/ccv)).min(2.0) * dpt_bonus;
         //return (1.0 + ((unit - ccv) / (max - ccv))) * dpt_bonus;
-
     }
     if unit < ccv {
         return ((unit - MIN_POSITIVE) / (ccv - MIN_POSITIVE)) * dpt_bonus;
@@ -236,9 +235,18 @@ mod tests {
             10.0,
             10.0,
             1.0,
-            20.0,
         );
         assert_eq!(result, 1.0);
+    }
+
+    #[test]
+    fn test_calculate_dpt_factor10() {
+        let result = calculate_dpt(
+            100.0,
+            10.0,
+            1.0,
+        );
+        assert_eq!(result, 2.0);
     }
 
     #[test]
@@ -247,7 +255,6 @@ mod tests {
             20.0,
             10.0,
             1.0,
-            20.0,
         );
         assert_eq!(result, 2.0);
     }
@@ -258,7 +265,6 @@ mod tests {
             1.0,
             10.0,
             1.0,
-            20.0,
         );
         assert_eq!(result, 0.09999999999999999);
     }
@@ -269,7 +275,6 @@ mod tests {
             1.0,
             1.0,
             1.5,
-            1.0,
         );
         assert_eq!(result, 1.5);
     }
@@ -281,15 +286,13 @@ mod tests {
             result += calculate_dpt(
                 1.0,
                 10.0,
-                1.0,
-                100.0);
+                1.0);
         }
         assert_eq!(result, 9.89999999999998);
         result = calculate_dpt(
             100.0,
             10.0,
-            1.0,
-            100.0);
+            1.0);
         assert_eq!(result, 2.0);
     }
 
