@@ -96,7 +96,6 @@ mod tests {
     #[test]
     fn contribute_contribution_must_be_bigger_than_0() {
         let mut contributor = Contributor::new();
-        contributor.contribute(0.0,1);
         assert!(contributor.contribute(0.0,1).is_err());
         assert!(contributor.contribute(-1.0, 1).is_err())
     }
@@ -111,10 +110,10 @@ mod tests {
     fn contribute_max_period() {
         let mut contributor = Contributor::new();
         for periond in 1..481  {
-            contributor.contribute(1.0, periond);
+            contributor.contribute(1.0, periond).unwrap();
         }
         assert_eq!(contributor.contributions.len(), 480);
-        contributor.contribute(1.0, 481);
+        contributor.contribute(1.0, 481).unwrap();
         assert!(contributor.contribute(1.0,482).is_err());
     }
 
@@ -123,7 +122,7 @@ mod tests {
         let mut contributor = Contributor::new();
 
         for periond in 1..481  {
-            contributor.contribute(1.0, periond);
+            contributor.contribute(1.0, periond).unwrap();
         }
         assert_eq!(contributor.wallet(), 9999520.0);
     }

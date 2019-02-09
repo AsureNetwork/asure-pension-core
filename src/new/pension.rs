@@ -362,8 +362,8 @@ impl Pension {
 mod tests {
     use crate::new::pension::Pension;
     use crate::new::contributor::Contributor;
-    use std::collections::HashMap;
-    use crate::new::types::Dpt;
+    //use std::collections::HashMap;
+    //use crate::new::types::Dpt;
 
     #[test]
     fn start_new_period() {
@@ -375,8 +375,9 @@ mod tests {
     #[test]
     fn join() {
         let mut pension = Pension::new();
-        let mut contributor = Contributor:: new();
-        contributor.contribute(1.0, 1);
+        let mut contributor = Contributor::new();
+        contributor.contribute(1.0, 1).unwrap();
+        ;
         pension.join(&contributor);
         assert_eq!(pension.contributors_total, 1);
         assert_eq!(pension.periods_open, 480);
@@ -388,7 +389,8 @@ mod tests {
         let mut contributor = Contributor:: new();
         pension.join(&contributor);
         for period in 1..241 {
-            contributor.contribute(1.0, period);
+            contributor.contribute(1.0, period).unwrap();
+            ;
         }
         pension.retire(contributor);
         assert_eq!(pension.pensioners_total, 1);
