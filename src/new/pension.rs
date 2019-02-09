@@ -51,7 +51,7 @@ pub struct Pension {
     pub(super) period: Period,
     period_states: HashMap<Period, PeriodState>,
 
-    current_contribution_value: Unit,
+    pub(super) current_contribution_value: Unit,
     current_contribution_value_degree: Unit,
 
     contributors_total: u64,

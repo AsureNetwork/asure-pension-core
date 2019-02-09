@@ -31,7 +31,7 @@ impl PensionSimulation for Sim {
         contributor.transactions.len() == 480
     }
 
-    fn pay_pension(&mut self, contributor: &User) -> Option<f64> {
+    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
         Some(1.0)
     }
 }

@@ -218,8 +218,9 @@ pub fn print(pension: &Pension, users: &[User]) {
 
     println!("Period: {}, Total Eth: {}, Total Contributions Eth: {}, Total Pension Eth: {}, Total Laggards: {}",
              pension.period, pension.savings_total, pension.contributions_total, pension.pensions_total, pension.laggards_total);
-    println!("Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
-             pension.dpt_total, contributor_count, pensioner_count, done_count);
+    println!("Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}, CCV: {}",
+             pension.dpt_total, contributor_count, pensioner_count, done_count, pension.current_contribution_value);
+
     for user in users {
         match user {
             User::Contributor(contributor) => {

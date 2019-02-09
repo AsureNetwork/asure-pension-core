@@ -1,8 +1,7 @@
-//cargo run --example newsim05
+//cargo run --example newsim04
 use asure_pension_core::new::*;
-//use asure_pension_core::new::contributor::*;
+use asure_pension_core::new::contributor::*;
 use asure_pension_core::new::types::*;
-use asure_pension_core::new::pensioner::Pensioner;
 
 struct Sim;
 
@@ -15,17 +14,23 @@ impl Sim {
 impl PensionSimulation for Sim {
     fn new_contributors(&mut self, current_period: Period) -> u64 {
         match current_period {
-            1 => 1,
-            960 => 10,
+            1 => 2,
+            480 => 2,
+//            960 => 2,
+//            1340 => 2,
+//            1820 => 2,
             _ => 0,
         }
     }
-
-    fn should_claim_pension(&mut self, pensioner: &Pensioner, period: Period) -> bool {
-        match pensioner.contributor.id() {
-            0 => period <= 940 || period >= 2470,
-            _ => period >= 2000
-        }
+    fn should_contribute(&mut self, _contributor: &Contributor, period: Period) -> Option<Unit> {
+        //inflation
+        let period_max = period.min(480);
+        let deflation = 5.0;
+        let unit = 1.0;
+        let year = (period_max / 12) as f64;
+        let factor = (deflation + 100.0) / 100.0;
+        let result = unit * (1.0 / factor as f64).powf(year);
+        Some(result)
     }
 }
 

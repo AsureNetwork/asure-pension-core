@@ -138,6 +138,28 @@ mod tests {
     use super::*;
     use crate::settings::*;
 
+
+    #[test]
+    fn test_deflation() {
+        let unit = 1.0;
+        let inflation = 8.0;
+        let year = (480 / 12) as f64;
+        let factor = ((inflation + 100.0) / 100.0);
+        let result = unit * (factor as f64).powf(year);
+        assert_eq!(result, 21.724521496799902);
+    }
+
+    #[test]
+    fn test_inflation() {
+        let unit = 1.0;
+        let inflation = 8.0;
+        let year = (480 / 12) as f64;
+        let factor = ((inflation + 100.0) / 100.0);
+        let result = unit * (1.0 / factor as f64).powf(year);
+        assert_eq!(result, 0.04603093330029394);
+    }
+
+
     #[test]
     fn test_calculate_savings_dpt_unit_rate() {
         let users_dpt = [480.0, 480.0, 480.0, 480.0, 480.0,
