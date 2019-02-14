@@ -140,23 +140,34 @@ mod tests {
 
 
     #[test]
+    fn test_bla() {
+        let mut zero = (1 / 12) as f64;
+        assert_eq!(zero, 0.0);
+        zero = (11 / 12) as f64;
+        assert_eq!(zero, 0.0);
+        let one = (13 / 12) as f64;
+        assert_eq!(one, 1.0);
+    }
+
+
+    #[test]
     fn test_deflation() {
         let unit = 1.0;
-        let deflation = 8.0;
+        let deflation = 5.0;
         let year = (480 / 12) as f64;
         let factor = (deflation + 100.0) / 100.0;
         let result = unit * (factor as f64).powf(year);
-        assert_eq!(result, 21.724521496799902);
+        assert_eq!(result, 7.039988712124658);
     }
 
     #[test]
     fn test_inflation() {
         let unit = 1.0;
-        let inflation = 8.0;
+        let inflation = 5.0;
         let year = (480 / 12) as f64;
         let factor = (inflation + 100.0) / 100.0;
         let result = unit * (1.0 / factor as f64).powf(year);
-        assert_eq!(result, 0.04603093330029394);
+        assert_eq!(result, 0.1420456823002776);
     }
 
 

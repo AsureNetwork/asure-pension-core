@@ -24,7 +24,7 @@ impl PensionSimulation for Sim {
     }
     fn should_contribute(&mut self, _contributor: &Contributor, period: Period) -> Option<Unit> {
         //inflation
-        let period_max = period.min(480);
+        let period_max = period - 1; //(period-1).min(480);
         let deflation = 5.0;
         let unit = 1.0;
         let year = (period_max / 12) as f64;
