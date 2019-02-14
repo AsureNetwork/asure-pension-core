@@ -1,43 +1,37 @@
 use asure_pension_core::*;
-use asure_pension_core::user::User;
+use asure_pension_core::types::*;
+use asure_pension_core::contributor::*;
 use rand::prelude::*;
 use rand::thread_rng;
 
-struct SimulationRandomPayment {
+struct Sim {
     rng: ThreadRng,
-
 }
 
-impl SimulationRandomPayment {
+impl Sim {
     pub fn new() -> Self {
-        SimulationRandomPayment {
-            rng: thread_rng()
-        }
+        Sim { rng: thread_rng() }
     }
 }
 
-impl PensionSimulation for SimulationRandomPayment {
-    fn name(&mut self) -> String {
-        "SimulationRandomPayment".to_string()
-    }
-
-    fn create_user(&mut self, current_period: u64) -> u32 {
+impl PensionSimulation for Sim {
+    fn new_contributors(&mut self, current_period: Period) -> u64 {
         match current_period {
             1 => 10,
-            481 => 5,
+            481 => 10,
             _ => 0,
         }
     }
 
-    fn should_retire(&mut self, contributor: &User) -> bool {
-        contributor.transactions.len() == 480
+    fn should_retire(&mut self, contributor: &Contributor, _period: Period) -> bool {
+        contributor.contributions.len() == 480
     }
 
-    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
-        Some(self.rng.gen_range(0.5, 3.5))
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
+        Some(self.rng.gen_range(0.1, 2.5))
     }
 }
 
 fn main() {
-    Pension::simulate(SimulationRandomPayment::new());
+    simulate(Sim::new()).unwrap();
 }

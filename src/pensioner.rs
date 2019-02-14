@@ -1,8 +1,8 @@
-use crate::new::contributor::Contributor;
 use std::collections::HashMap;
-use crate::new::types::*;
-use crate::new::user::User;
-use crate::new::doneuser::DoneUser;
+use crate::contributor::Contributor;
+use crate::types::*;
+use crate::user::User;
+use crate::doneuser::DoneUser;
 
 pub struct Pensioner {
     pub contributor: Contributor,

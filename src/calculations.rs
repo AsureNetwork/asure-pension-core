@@ -136,7 +136,7 @@ impl Floor for f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::settings::*;
+    //use crate::settings::*;
 
 
     #[test]
@@ -235,21 +235,21 @@ mod tests {
         assert_eq!(result, 1);
     }
 
-    #[test]
-    fn test_calculate_contribution_value() {
-        let mut numbers = [1.0, 1.0, 1.0];
-        let contribution_value = 1.0;
-
-        let settings = Settings::new();
-        let contribution_value_degree = settings.ccv_degree;
-
-        let result = calculate_contribution_value(
-            contribution_value,
-            contribution_value_degree,
-            &mut numbers);
-
-        assert_eq!(result, 1.0);
-    }
+//    #[test]
+//    fn test_calculate_contribution_value() {
+//        let mut numbers = [1.0, 1.0, 1.0];
+//        let contribution_value = 1.0;
+//
+//        let settings = Settings::new();
+//        let contribution_value_degree = settings.ccv_degree;
+//
+//        let result = calculate_contribution_value(
+//            contribution_value,
+//            contribution_value_degree,
+//            &mut numbers);
+//
+//        assert_eq!(result, 1.0);
+//    }
 
     #[test]
     fn test_calculate_dpt() {

@@ -1,8 +1,8 @@
 use std::sync::atomic::{self, AtomicUsize};
 use std::collections::HashMap;
-use crate::new::types::*;
-use crate::new::user::User;
-use crate::new::pensioner::Pensioner;
+use crate::types::*;
+use crate::user::User;
+use crate::pensioner::Pensioner;
 use crate::calculations::*;
 
 static USER_COUNTER: AtomicUsize = atomic::ATOMIC_USIZE_INIT;
@@ -91,7 +91,8 @@ impl Contributor {
 
 #[cfg(test)]
 mod tests {
-    use crate::new::contributor::Contributor;
+    use crate::*;
+    use crate::contributor::Contributor;
 
     #[test]
     fn contribute_contribution_must_be_bigger_than_0() {

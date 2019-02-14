@@ -1,157 +1,50 @@
-use std::sync::atomic::{self, AtomicUsize};
-use crate::transaction::*;
-use crate::wallet::*;
+use crate::contributor::Contributor;
+use crate::pensioner::Pensioner;
+use crate::doneuser::DoneUser;
 
-static USER_COUNTER: AtomicUsize = atomic::ATOMIC_USIZE_INIT;
-
-#[derive(Debug)]
-pub struct User {
-    pub id: usize,
-    pub name: String,
-    pub wallet: Wallet,
-    pub pension_status: PensionStatus,
-    pub pension_payment_months: u128,
-    pub pension_receive_months: u128,
-    pub activated_dpt: f64,
-    pub last_dpt: f64,
-    pub transactions: Vec<Transaction>,
+pub enum User {
+    Contributor(Contributor),
+    Pensioner(Pensioner),
+    Done(DoneUser),
 }
-
-#[derive(PartialEq, Debug)]
-pub enum PensionStatus {
-    Run,
-    Retirement,
-    Done,
-}
-
-static mut ID_GENERATOR: u64 = 0;
 
 impl User {
-    // A public constructor method
-    #[warn(dead_code)]
     pub fn new() -> Self {
-        User {
-            id: USER_COUNTER.fetch_add(1, atomic::Ordering::SeqCst),
-            name: String::from("UserName"),
-            wallet: Wallet::new(),
-            pension_status: PensionStatus::Run,
-            pension_payment_months: 0,
-            pension_receive_months: 0,
-            activated_dpt: 0.0,
-            last_dpt: 0.0,
-            transactions: Vec::new(),
+        User::Contributor(Contributor::new())
+    }
+
+    pub fn to_contributor(&self) -> Option<&Contributor> {
+        match self {
+            User::Contributor(contributor) => Some(contributor),
+            _ => None
         }
     }
 
-    pub fn allowed_pension_receive_months(&self) -> u128 {
-        (self.pension_payment_months * self.pension_payment_months) / 480
-    }
-
-    pub fn activate_retirement(&mut self) -> bool {
-        self.pension_status = PensionStatus::Retirement;
-        self.last_dpt = 0.0;
-        true
-    }
-
-    pub fn pay(&mut self, period: u64, payment: f64) -> Result<(), String> {
-        if self.pension_status == PensionStatus::Retirement {
-            return Err(String::from("Already retired"));
+    pub fn to_contributor_mut(&mut self) -> Option<&mut Contributor> {
+        match self {
+            User::Contributor(contributor) => Some(contributor),
+            _ => None
         }
-
-        if self.pension_payment_months >= 480 {
-            return Err(format!("Already payed max. amount of {} month", self.pension_payment_months));
-        }
-
-        let tx = Transaction::new(period, payment);
-        self.wallet.eth -= tx.amount;
-        self.pension_payment_months += 1;
-        self.transactions.push(tx);
-
-        Ok(())
     }
 
-    pub fn payout(&mut self, payment: f64) -> Result<(), String> {
-        if self.is_pension_payment_complete() {
-            return Err(format!("Already payed out max. amount of {} month",
-                               self.allowed_pension_receive_months()));
+    pub fn to_pensioner(&self) -> Option<&Pensioner> {
+        match self {
+            User::Pensioner(pensioner) => Some(pensioner),
+            _ => None
         }
-
-        self.pension_receive_months += 1;
-        self.wallet.pension_eth += payment;
-
-        Ok(())
     }
 
-    pub fn is_pension_payment_complete(&self) -> bool {
-        self.pension_status != PensionStatus::Run &&
-            self.pension_receive_months >= self.allowed_pension_receive_months()
+    pub fn to_pensioner_mut(&mut self) -> Option<&mut Pensioner> {
+        match self {
+            User::Pensioner(pensioner) => Some(pensioner),
+            _ => None
+        }
+    }
+
+    pub fn to_done_user(&self) -> Option<&DoneUser> {
+        match self {
+            User::Done(done_user) => Some(done_user),
+            _ => None
+        }
     }
 }
-
-
-#[cfg(test)]
-mod tests {
-    use crate::user::*;
-
-    #[test]
-    fn get_pension_receive_months_for_ten_years() {
-        let mut user = User::new();
-        user.pension_payment_months = 120;
-
-        assert_eq!(user.allowed_pension_receive_months(), 30);
-    }
-
-    #[test]
-    fn should_activate_retirement() {
-        let mut user = User::new();
-
-        assert!(user.pension_status == PensionStatus::Run);
-        user.activate_retirement();
-        assert!(user.pension_status == PensionStatus::Retirement);
-    }
-
-
-    #[test]
-    fn pay_should_throw_error_already_retired() {
-        let mut user: User = User::new();
-        user.pension_status = PensionStatus::Retirement;
-        assert!(user.pay(12, 100.0).is_err(), "Already retired")
-    }
-
-    #[test]
-    fn pay_should_throw_error_already_payed() {
-        let mut user: User = User::new();
-        user.pension_payment_months = 480;
-        assert!(user.pay(12, 100.0).is_err(), "Already payed {} month", user.pension_payment_months);
-    }
-
-    #[test]
-    fn pay_create_single_transaction() {
-        let mut user: User = User::new();
-        user.pension_payment_months = 0;
-        user.wallet.eth = 100.0;
-
-        user.pay(12, 10.0).unwrap();
-
-        assert_eq!(user.transactions.len(), 1);
-        assert_eq!(user.wallet.eth, 90.0);
-        assert_eq!(user.pension_payment_months, 1);
-    }
-
-    #[test]
-    fn pay_ten_years_period() {
-        let mut user: User = User::new();
-        user.pension_payment_months = 0;
-        user.wallet.eth = 1000.0;
-
-        for period in 0..480 {
-            user.pay(period, 1.0).unwrap();
-        }
-
-        assert_eq!(user.transactions.len(), 480);
-        assert_eq!(user.wallet.eth, 520.0);
-        assert_eq!(user.pension_payment_months, 480);
-    }
-}
-
-

@@ -2,10 +2,10 @@
 use std::collections::HashMap;
 
 use crate::calculations::*;
-use crate::new::contributor::Contributor;
-use crate::new::pensioner::Pensioner;
-use crate::new::types::*;
-use crate::new::user::User;
+use crate::contributor::Contributor;
+use crate::pensioner::Pensioner;
+use crate::types::*;
+use crate::user::User;
 
 pub struct PeriodState {
     current_dpt_bonus: Dpt,
@@ -360,10 +360,10 @@ impl Pension {
 
 #[cfg(test)]
 mod tests {
-    use crate::new::pension::Pension;
-    use crate::new::contributor::Contributor;
+    use crate::pension::Pension;
+    use crate::contributor::Contributor;
     //use std::collections::HashMap;
-    //use crate::new::types::Dpt;
+    //use crate::types::Dpt;
 
     #[test]
     fn start_new_period() {
@@ -390,7 +390,6 @@ mod tests {
         pension.join(&contributor);
         for period in 1..241 {
             contributor.contribute(1.0, period).unwrap();
-            ;
         }
         pension.retire(contributor);
         assert_eq!(pension.pensioners_total, 1);

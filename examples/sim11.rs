@@ -1,5 +1,6 @@
 use asure_pension_core::*;
-use asure_pension_core::user::User;
+use asure_pension_core::types::*;
+use asure_pension_core::contributor::*;
 
 struct Sim;
 
@@ -11,10 +12,10 @@ impl Sim {
 
 impl PensionSimulation for Sim {
     fn name(&mut self) -> String {
-        "Sim 12".to_string()
+        "Sim 11".to_string()
     }
 
-    fn create_user(&mut self, current_period: u64) -> u32 {
+    fn new_contributors(&mut self, current_period: Period) -> u64 {
         if current_period == 1 {
             return 10;
         }
@@ -27,15 +28,15 @@ impl PensionSimulation for Sim {
         }
     }
 
-    fn should_retire(&mut self, contributor: &User) -> bool {
-        contributor.transactions.len() == 480
+    fn should_retire(&mut self, contributor: &Contributor, _period: Period) -> bool {
+        contributor.contributions.len() == 480
     }
 
-    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
         Some(1.0)
     }
 }
 
 fn main() {
-    Pension::simulate(Sim::new());
+    simulate(Sim::new()).unwrap();
 }

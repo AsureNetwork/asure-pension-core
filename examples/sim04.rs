@@ -1,8 +1,7 @@
-//cargo run --example sim2
-//#![feature(exclusive_range_pattern)]
-
+//cargo run --example newsim04
 use asure_pension_core::*;
-use asure_pension_core::user::User;
+use asure_pension_core::types::*;
+use asure_pension_core::contributor::*;
 
 struct Sim;
 
@@ -13,23 +12,14 @@ impl Sim {
 }
 
 impl PensionSimulation for Sim {
-    fn name(&mut self) -> String {
-        "Sim 04".to_string()
-    }
-
-    fn create_user(&mut self, current_period: u64) -> u32 {
+    fn new_contributors(&mut self, current_period: Period) -> u64 {
         match current_period {
             1 => 10,
             _ => 0,
         }
     }
-
-    fn should_retire(&mut self, contributor: &User) -> bool {
-        contributor.transactions.len() == 480
-    }
-
-    fn pay_pension(&mut self, _contributor: &User) -> Option<f64> {
-        match _contributor.pension_payment_months {
+    fn should_contribute(&mut self, contributor: &Contributor, _period: Period) -> Option<Unit> {
+        match contributor.contributions.len() {
             0...59 => Some(1.0),
             60...239 => Some(0.5),
             240...359 => Some(0.25),
@@ -40,5 +30,5 @@ impl PensionSimulation for Sim {
 }
 
 fn main() {
-    Pension::simulate(Sim::new());
+    simulate(Sim::new()).unwrap();
 }

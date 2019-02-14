@@ -1,4 +1,4 @@
-use crate::new::pensioner::Pensioner;
+use crate::pensioner::Pensioner;
 
 pub struct DoneUser {
     pub pensioner: Pensioner,

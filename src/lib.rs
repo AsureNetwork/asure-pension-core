@@ -1,344 +1,305 @@
-#![allow(dead_code)]
+use std::env;
+use std::time::{Duration, Instant};
 
+use crate::contributor::Contributor;
+use crate::pension::Pension;
+use crate::pensioner::Pensioner;
+use crate::types::*;
+use crate::user::User;
 
-use std::cmp::Ordering::Equal;
-
-use crate::csvexport::PensionCsvExporter;
-//use crate::settings::*;
-use crate::user::*;
-use crate::settings::Settings;
-
-//use std::cell::RefCell;
-//use std::rc::Rc;
-//pub mod pension;
-
-pub mod calculations;
-pub mod csvexport;
-pub mod transaction;
+pub mod contributor;
+pub mod doneuser;
+pub mod pension;
+pub mod pensioner;
+pub mod types;
 pub mod user;
-pub mod wallet;
-pub mod token;
-pub mod settings;
-pub mod new;
-
-
-//use std::mem;
-//use std::cell::RefCell;
-//use std::iter::FromIterator;
-#[derive(Debug)]
-pub struct Pension {
-    pub current_dpt_bonus: f64,
-    pub ccv: f64,
-    pub total_eth: f64,
-    pub total_month_eth: f64,
-    pub total_dpt: f64,
-    pub total_month_dpt: f64,
-    pub total_retirement_dpt: f64,
-    pub users: Vec<User>,
-    pub current_period: u64,
-}
+pub mod calculations;
 
 pub trait PensionSimulation {
-    fn name(&mut self) -> String;
-    fn create_user(&mut self, current_period: u64) -> u32;
-    fn should_retire(&mut self, contributor: &User) -> bool;
-    fn pay_pension(&mut self, contributor: &User) -> Option<f64>;
-}
-
-struct PensionFold {
-    total_eth: f64,
-    total_month_eth: f64,
-}
-
-impl PensionFold {
-    pub fn new() -> PensionFold {
-        PensionFold {
-            total_eth: 0.0,
-            total_month_eth: 0.0,
-        }
+    fn name(&mut self) -> String {
+        let args: Vec<String> = env::args().collect();
+        (&args[0]).to_string() //.split(r"\").collect().reverse()[0]
     }
-}
 
-impl Pension {
-    pub fn new() -> Pension {
-        Pension {
-            current_dpt_bonus: 0.5,
-            ccv: 1.0,
-            total_eth: 0.0,
-            total_month_eth: 0.0,
-            total_dpt: 0.0,
-            total_month_dpt: 0.0,
-            total_retirement_dpt: 0.0,
-            users: Vec::new(),
-            current_period: 0,
+    fn new_contributors(&mut self, period: Period) -> u64 {
+        match period {
+            1 => 10,
+            _ => 0
         }
     }
 
-    pub fn simulate<T>(mut simulation: T) where T: PensionSimulation {
-        println!("Pension {}", simulation.name());
+    fn should_retire(&mut self, contributor: &Contributor, _period: Period) -> bool {
+        contributor.contributions.len() == 480
+    }
 
-        let mut pension = Pension::new();
-        let mut pension_exporter = PensionCsvExporter::new();
+    fn should_contribute(&mut self, _contributor: &Contributor, _period: Period) -> Option<Unit> {
+        Some(1.0)
+    }
 
-        loop {
-            pension.start();
+    fn should_claim_pension(&mut self, _pensioner: &Pensioner, _period: Period) -> bool {
+        true
+    }
 
-            // 1. Create new contributors
-            pension.create_users(simulation.create_user(pension.current_period));
+    fn should_print(&mut self, _period: Period) -> bool {
+        true
+    }
+}
 
-            // 2. Retire all selected contributors so they become pensioners
-            let mut contributors = pension.users
-                .iter_mut()
-                .filter(|contributor| contributor.pension_status == PensionStatus::Run)
-                .collect::<Vec<_>>();
-            contributors
-                .iter_mut()
-                .filter(|contributor| simulation.should_retire(contributor))
-                .for_each(|contributor| {
-                    contributor.activate_retirement();
-                });
+pub fn simulate<T>(mut simulation: T) -> Result<(), String> where T: PensionSimulation {
+    println!("Pension {}", simulation.name());
+    let start = Instant::now();
+    let mut users: Vec<User> = vec![];
+    let mut pension = Pension::new();
+    //let mut pension_exporter = PensionCsvExporter::new();
 
-            // 3. Let all selected contributors pay into the pension system
-            let contributor_payments = contributors
-                .iter()
-                .filter_map(|contributor| simulation.pay_pension(contributor))
-                .collect::<Vec<_>>();
-            let current_period = pension.current_period;
-            let total_payments = contributors
-                .iter_mut()
-                .zip(contributor_payments)
-                .fold(0.0, |total_payments, (contributor, payment)| {
-                    match contributor.pay(current_period, payment) {
-                        Ok(()) => total_payments + payment,
-                        Err(_) => total_payments
+    loop {
+        pension.start_new_period();
+
+        // 1. Create new contributors
+        add_new_contributor(&mut simulation, &mut pension, &mut users);
+
+        // 2. Retire all selected contributors so they become pensioners
+        users = retire_contributor(&mut simulation, &mut pension, users);
+
+        // 3. Let all selected contributors pay into the pension system
+        contribute(&mut simulation, &mut pension, &mut users);
+
+
+        // 4. Payout pensions to all selected pensioners
+        claim_pensions(&mut simulation, &mut pension, &mut users);
+
+        // 5. Calculate and distribute DPT based on their contribution
+        //    of the current period
+        claim_dpts(&mut simulation, &mut pension, &mut users)?;
+
+
+        // 6. Remove all pensioners from the system who got their complete pension
+        users = remove_done_pensioners(&mut pension, users);
+
+
+        // 7. Log state after period is done
+        if simulation.should_print(pension.period) {
+            print(&pension, &users);
+        }
+        //pension_exporter.add_pension(&pension);
+        //pension_exporter.add_users(&pension);
+
+        // 8. Repeat until all users retired and got their complete pension
+        // TODO: Implement PartialEq?
+        if users.iter().all(|user| {
+            match user.to_done_user() {
+                Some(_) => true,
+                None => false
+            }
+        }) {
+            break;
+        }
+    }
+
+    let res = users.iter()
+        .filter_map(|user| user.to_done_user())
+        .fold((0, 0), |(pos, neg), done_user| {
+            let pensioner = &done_user.pensioner;
+            let contributor = &pensioner.contributor;
+            let diff = (contributor.wallet() + pensioner.total_pension()) - 10000000.0;
+            if diff >= 0.0 {
+                (pos + 1, neg)
+            } else {
+                (pos, neg + 1)
+            }
+        });
+    println!("Res: {:?}", res);
+    let duration: Duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
+
+    //println!("{:?}", pension);
+    //
+    //pension_exporter.export_pensions(format!("{}-pensions.csv", simulation.name().to_lowercase()));
+    //pension_exporter.export_users(format!("{}-users.csv", simulation.name().to_lowercase()));
+    Ok(())
+}
+
+fn add_new_contributor<T>(simulation: &mut T, pension: &mut Pension, users: &mut Vec<User>) where T: PensionSimulation {
+    for _ in 0..simulation.new_contributors(pension.period) {
+        let new_user = User::new();
+        match &new_user {
+            User::Contributor(contributor) => pension.join(contributor),
+            _ => panic!("user is not a contributor")
+        }
+        users.push(new_user);
+    }
+}
+
+fn retire_contributor<T>(simulation: &mut T, pension: &mut Pension, users: Vec<User>) -> Vec<User> where T: PensionSimulation {
+    users.into_iter()
+        .map(|user| {
+            match user {
+                User::Contributor(contributor) => {
+                    if simulation.should_retire(&contributor, pension.period) {
+                        pension.retire(contributor)
+                    } else {
+                        User::Contributor(contributor)
                     }
-                });
-            pension.add_amount(total_payments);
-
-            // 4. Payout pensions to all selected pensioners
-            pension.payout();
-
-            // 5. Calculate and distribute DPT based on their contribution
-            //    of the current period
-            // TODO: Logically I think this should happen as step 4 and the name of
-            //       the method should reflect what it does.
-            pension.end();
-
-            // 6. Remove all pensioners from the system who got their complete pension
-            pension.users
-                .iter_mut()
-                .filter(|user| user.is_pension_payment_complete())
-                .for_each(|user| user.pension_status = PensionStatus::Done);
-
-            // 7. Log state after period is done
-            pension.print();
-            pension_exporter.add_pension(&pension);
-            pension_exporter.add_users(&pension);
-
-            // 8. Repeat until all users retired and got their complete pension
-            if pension.users.iter().all(|user| user.pension_status == PensionStatus::Done) {
-                break;
-            }
-        }
-
-        println!("{:?}", pension);
-
-        pension_exporter.export_pensions(format!("csv/{}-pensions.csv", simulation.name().to_lowercase()));
-        pension_exporter.export_users(format!("csv/{}-users.csv", simulation.name().to_lowercase()));
-    }
-
-    pub fn print(&self) {
-        let contributor_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Run).count();
-        let pensioner_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Retirement).count();
-        let done_count = self.users.iter().filter(|user| user.pension_status == PensionStatus::Done).count();
-        let total_pension_eth: f64 = self.users.iter().map(|user| user.wallet.pension_eth).sum();
-
-        println!("Period: {}, Total Eth: {}, Total Pension Eth: {}, Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}",
-                 self.current_period, self.total_eth, total_pension_eth, self.total_dpt, contributor_count, pensioner_count, done_count);
-        for user in &self.users {
-            println!("User: {}, Status: {:?}, Wallet: {}, Pension: {}, Pension Months Allowed: {}, Pensions Months Received: {}, DPT: {} + ({})",
-                     user.id, user.pension_status, user.wallet.eth, user.wallet.pension_eth, user.allowed_pension_receive_months(),
-                     user.pension_receive_months, user.wallet.dpt.amount, user.last_dpt);
-        }
-
-        println!();
-        println!("-------------------------");
-        println!();
-    }
-
-    pub fn create_users(&mut self, count: u32) {
-        for _ in 0..count {
-            self.users.push(User::new());
-        }
-    }
-
-    pub fn start(&mut self) {
-        self.current_period += 1;
-        self.total_month_eth = 0.0;
-        self.current_dpt_bonus = calculations::calculate_dpt_bonus_by_period(self.current_period);
-    }
-
-    pub fn add_amount(&mut self, amount: f64) {
-        self.total_eth += amount;
-        self.total_month_eth += amount;
-    }
-
-    pub fn payout(&mut self) {
-        // If there are no pensioners in the current month, we don't have to
-        // payout anything and return early.
-        if self.pension_dpt_total() == 0.0 {
-            return ();
-        }
-
-        let contributions_month = self.contributions_of_current_period();
-        let contributions_month_total: f64 = contributions_month.iter().sum();
-        let contributions_month_avg = contributions_month_total / contributions_month.len() as f64;
-
-        // Payout all_eth_month of the current month to all pensioners
-        let mut monthly_dpt_unit_rate = 0.0;
-        if contributions_month_total > 0.0 {
-            monthly_dpt_unit_rate = self.calculate_monthly_dpt_unit_rate();
-            self.payout_monthly_contributions(monthly_dpt_unit_rate);
-        }
-
-        // Payout parts of the saved all_eth_month of previous month to all pensioners
-        if self.total_eth > 0.0 && (contributions_month_total == 0.0 || monthly_dpt_unit_rate < contributions_month_avg) {
-            let savings_dpt_unit_rate = self.calculate_savings_dpt_unit_rate();
-            self.payout_saved_contributions(savings_dpt_unit_rate);
-        }
-    }
-
-    fn contributions_of_current_period(&self) -> Vec<f64> {
-        let period = self.current_period;
-        self.users
-            .iter()
-            .filter(|user| user.pension_status == PensionStatus::Run)
-            .flat_map(|user| &user.transactions)
-            .filter(|tx| tx.period == period)
-            .map(|tx| tx.amount)
-            .collect::<Vec<_>>()
-    }
-
-    fn pension_dpt_total(&self) -> f64 {
-        self.users
-            .iter()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .map(|user| user.wallet.dpt.amount)
-            .sum()
-    }
-
-    fn payout_monthly_contributions(&mut self, monthly_dpt_unit_rate: f64) {
-        let pensions_from_month = self.users
-            .iter_mut()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |acc, user| {
-                let amount_unit = user.wallet.dpt.amount * monthly_dpt_unit_rate; // / 480.0
-                user.wallet.pension_eth += amount_unit;
-
-                return acc + amount_unit;
-            });
-
-        self.total_eth -= pensions_from_month;
-        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
-    }
-
-    fn payout_saved_contributions(&mut self, savings_dpt_unit_rate: f64) {
-        let pensions_from_savings = self.users
-            .iter_mut()
-            .filter(|user| user.pension_status == PensionStatus::Retirement)
-            .fold(0.0, |acc, user| {
-                let amount_unit = user.wallet.dpt.amount * savings_dpt_unit_rate;
-
-                match user.payout(amount_unit) {
-                    Ok(()) => acc + amount_unit,
-                    Err(err) => panic!(err),
                 }
-            });
-
-        self.total_eth -= pensions_from_savings;
-        assert!(self.total_eth >= 0.0, "self.total_eth: {}", self.total_eth);
-    }
-
-    fn calculate_monthly_dpt_unit_rate(&mut self) -> f64 {
-        let contributions_month = self.contributions_of_current_period();
-        let pension_dpt_total = self.pension_dpt_total();
-
-        calculations::calculate_monthly_dpt_unit_rate(&contributions_month, pension_dpt_total)
-    }
-
-    fn calculate_savings_dpt_unit_rate(&self) -> f64 {
-        let total_open_months = self.total_open_months();
-        let active_users_dpt = self.users
-            .iter()
-            .filter(|user| user.pension_status != PensionStatus::Done)
-            .map(|user| user.wallet.dpt.amount)
-            .collect::<Vec<_>>();
-
-        let active_users_dpt_total = active_users_dpt.iter().sum();
-
-        calculations::calculate_savings_dpt_unit_rate(
-            active_users_dpt.len() as u64, active_users_dpt_total, total_open_months, self.total_eth,
-        )
-    }
-
-    fn total_open_months(&self) -> f64 {
-        self.users
-            .iter()
-            .map(|user| {
-                match user.pension_status {
-                    PensionStatus::Run => 480.0,
-                    PensionStatus::Retirement => user.allowed_pension_receive_months() as f64 - user.pension_receive_months as f64,
-                    PensionStatus::Done => 0.0
-                }
-            })
-            .sum()
-    }
-
-    pub fn end(&mut self) {
-        let period = self.current_period;
-
-        let period_amounts = self.users
-            .iter()
-            .flat_map(|user| &user.transactions)
-            .filter(|tx| tx.period == period)
-            .map(|tx| tx.amount)
-            .collect::<Vec<_>>();
-
-        if period_amounts.len() == 0 {
-            return;
-        }
-
-        let settings = Settings::new();
-        let contribution_value_degree = settings.ccv_degree;
-
-        self.ccv = calculations::calculate_contribution_value(
-            self.ccv,
-            contribution_value_degree,
-            &period_amounts,
-        );
-
-        let mut sorted_period_amounts: Vec<f64> = period_amounts.to_vec();
-        sorted_period_amounts.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Equal));
-
-        //let max = *sorted_period_amounts.last().unwrap();
-
-        self.total_month_dpt = 0.0;
-
-        for user in &mut self.users {
-            if let Some(tx) = user.transactions.iter().find(|tx| tx.period == period) {
-                let dpt = calculations::calculate_dpt(
-                    tx.amount,
-                    self.ccv,
-                    self.current_dpt_bonus,
-                    //max,
-                );
-
-                self.total_month_dpt += dpt;
-                self.total_dpt += dpt;
-                user.wallet.dpt.amount += dpt;
-                user.last_dpt = dpt;
+                _ => user
             }
-        }
-    }
+        })
+        .collect()
 }
 
+fn remove_done_pensioners(pension: &mut Pension, users: Vec<User>) -> Vec<User> {
+    users.into_iter()
+        .map(|user| {
+            match user {
+                User::Pensioner(pensioner) => pension.try_finish(pensioner),
+                _ => user
+            }
+        })
+        .collect()
+}
+
+fn contribute<T>(simulation: &mut T, pension: &mut Pension, users: &mut Vec<User>) where T: PensionSimulation {
+    users.iter_mut()
+        .filter_map(|user| user.to_contributor_mut())
+        .for_each(|contributor| {
+            if let Some(contribution) = simulation.should_contribute(contributor, pension.period) {
+                match pension.contribute(contributor, contribution) {
+                    Err(err) => panic!(err),
+                    _ => (),
+                }
+            }
+        });
+}
+
+fn claim_pensions<T>(simulation: &mut T, pension: &mut Pension, users: &mut Vec<User>) where T: PensionSimulation {
+    let period = pension.period;
+
+    users.iter_mut()
+        .filter_map(|user| user.to_pensioner_mut())
+        .filter(|pensioner| simulation.should_claim_pension(pensioner, period))
+        .for_each(|pensioner| {
+            match pension.claim_pension(pensioner) {
+                Err(err) => panic!(err),
+                _ => (),
+            }
+        });
+}
+
+fn claim_dpts<T>(_simulation: &mut T, pension: &mut Pension, users: &mut Vec<User>) -> Result<(), String> where T: PensionSimulation {
+    // TODO: Logically I think this should happen as step 4 and the name of
+    //       the method should reflect what it does.
+    pension.prepare_claim_dpt(users)?;
+    users.iter_mut()
+        .filter_map(|user| user.to_contributor_mut())
+        .for_each(|contributor| {
+            match pension.claim_dpt(contributor) {
+                Err(err) => panic!(err),
+                _ => (),
+            }
+        });
+
+    Ok(())
+}
+
+pub fn print(pension: &Pension, users: &[User]) {
+    let contributor_count = users
+        .iter()
+        .filter_map(|user| user.to_contributor())
+        .count();
+
+    let pensioner_count = users
+        .iter()
+        .filter_map(|user| user.to_pensioner())
+        .count();
+
+    let done_count = users
+        .iter()
+        .filter_map(|user| user.to_done_user())
+        .count();
+
+    println!("Period: {}, Total Eth: {}, Total Contributions Eth: {}, Total Pension Eth: {}, Total Laggards: {}",
+             pension.period, pension.savings_total, pension.contributions_total, pension.pensions_total, pension.laggards_total);
+    println!("Total DPT: {}, Total Contributor: {}, Total Pensioner: {}, Total Done: {}, CCV: {}",
+             pension.dpt_total, contributor_count, pensioner_count, done_count, pension.current_contribution_value);
+
+    for user in users {
+        match user {
+            User::Contributor(contributor) => {
+                let last_dpt = match contributor.dpts.get(&pension.period) {
+                    Some(dpt) => format!("{}", dpt),
+                    None => "0".to_string()
+                };
+                let diff = contributor.wallet() - 10000000.0;
+                println!("User: {:2}, Status: {:>11}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: {:6.3}, DIFF: {:6.3}, DPT: {:14.10} + ({})",
+                         contributor.id(), "Contributor", contributor.wallet(), 0, contributor.allowed_pension_periods(),
+                         0, 0, diff, contributor.dpt_total(), last_dpt);
+            }
+            User::Pensioner(pensioner) => {
+                let contributor = &pensioner.contributor;
+                let avg = pensioner.total_pension() / pensioner.pension_periods() as f64;
+                let diff = (contributor.wallet() + pensioner.total_pension()) - 10000000.0;
+                println!("User: {:2}, Status: {:>11}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: {:6.3}, DIFF: {:6.3}, DPT: {:14.10}",
+                         contributor.id(), "Pensioner", contributor.wallet(), pensioner.total_pension(),
+                         contributor.allowed_pension_periods(), pensioner.pension_periods(), avg, diff, contributor.dpt_total());
+            }
+            User::Done(done_user) => {
+                let pensioner = &done_user.pensioner;
+                let contributor = &pensioner.contributor;
+                let avg = pensioner.total_pension() / pensioner.pension_periods() as f64;
+                let diff = (contributor.wallet() + pensioner.total_pension()) - 10000000.0;
+                println!("User: {:2}, Status: {:>11}, Wallet: {}, Pension: {:16.12}, Pension Months Allowed: {:3}, Pensions Months Received: {:3}, AVG: {:6.3}, DIFF: {:6.3}, DPT: {:14.10}",
+                         contributor.id(), "Done", contributor.wallet(), pensioner.total_pension(),
+                         contributor.allowed_pension_periods(), pensioner.pension_periods(), avg, diff, contributor.dpt_total());
+            }
+        }
+    }
+
+    println!();
+    println!("-------------------------");
+    println!();
+}
+
+//#[cfg(test)]
+//mod tests {
+//    use crate::*;
+//    use crate::pension::Pension;
+//
+//    #[test]
+//    fn create_users() {
+//        let mut pension = Pension::new();
+//        pension.create_users(5);
+//
+//        assert_eq!(pension.users.len(), 5);
+//    }
+//
+//    #[test]
+//    fn add_amount(){
+//        let mut pension = Pension::new();
+//        pension.add_amount(100.0);
+//        assert_eq!(pension.total_eth, 100.0);
+//        assert_eq!(pension.total_month_eth, 100.0);
+//    }
+//
+//    #[test]
+//    fn payout(){
+//        let mut pension = Pension::new();
+//        pension.create_users(10);
+//        pension.current_period = 1;
+//        pension.payout();
+//
+//    }
+//    #[test]
+//    fn start_should_create_init_dpt_bonus(){
+//        let mut pension = Pension::new();
+//        pension.start_new_period();
+//        assert_eq!(pension.current_dpt_bonus, 1.5);
+//    }
+//    #[test]
+//    fn start_should_create_a_new_period() {
+//        let mut pension = Pension::new();
+//        assert!(pension.period == 0);
+//        pension.start_new_period();
+//        assert!(pension.period > 0);
+//    }
+//
+//}
